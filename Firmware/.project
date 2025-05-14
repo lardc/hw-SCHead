@@ -439,15 +439,5 @@
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/hw-STM32-libs/System/System/tiny_printf.c</locationURI>
 		</link>
-		<link>
-			<name>Source/Platform/FormatOutputJSON.h</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/hw-STM32-libs/Firmware/FormatOutputJSON.h</locationURI>
-		</link>
-		<link>
-			<name>Source/Platform/FormatOutputJSON.c</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/hw-STM32-libs/Firmware/FormatOutputJSON.c</locationURI>
-		</link>
 	</linkedResources>
 </projectDescription>

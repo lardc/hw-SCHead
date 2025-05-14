@@ -7,26 +7,17 @@
 
 #include "xCCIParams.h"
 
-
-// Маска поля функции
+// Constants
 //
-#define CAN_FUNC_MASK				0x000003FF
-
-// Конфигурация Slave
+#define CAN_SLAVE_DEVICE			FALSE
 //
-#define CAN_SLAVE_NID				182				// Node ID устройства
-#define CAN_SLAVE_NID_MASK			0x0003FC00		// Маска Slave node ID
-#define CAN_SLAVE_NID_MPY			10				// Смещение адреса Slave
-
-// Конфигурация Master
+#define MASTER_DEVICE_CAN_ADDRESS	        8
+#define MASTER_DEV_ADDR_MPY			6
 //
-#define CAN_MASTER_NID				0				// Node ID устройства
-#define CAN_MASTER_NID_MASK			0x03FC0000		// Маска Master node ID
-#define CAN_MASTER_NID_MPY			18				// Смещение адреса Master
-
-// CAN фильтр
+#define SLAVE_DEVICE_CAN_ADDRESS	        8
+#define SLAVE_DEV_ADDR_MPY			10
 //
-#define CAN_SLAVE_FILTER_ID			(CAN_SLAVE_NID << CAN_SLAVE_NID_MPY)
-
+//
+#define CAN_ACCEPTANCE_MASK			0xFFFFFC00
 
 #endif // __BCCI_PARAMS_H

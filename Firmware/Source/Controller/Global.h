@@ -1,23 +1,77 @@
-﻿#ifndef __GLOBAL_H
+﻿// -----------------------------------------
+// Global definitions
+// ----------------------------------------
+
+#ifndef __GLOBAL_H
 #define __GLOBAL_H
 
-// Definitions
-// 
-#define	SCCI_TIMEOUT_TICKS			1000	// Таймаут интерфейса SCCI (в мс)
-#define EP_WRITE_COUNT				0		// Количество массивов для записи
-#define EP_COUNT					1		// Количество массивов для чтения
-#define ENABLE_LOCKING				FALSE	// Защита NV регистров паролем
 
-// Временные параметры
-#define TIME_LED_BLINK				500		// Мигание светодиодом (в мс)
-#define TIME_EXT_LED_BLINK			500		// Время загорания внешнего светодиода (в мс)
-#define TIME_FAULT_LED_BLINK		250		// Мигание светодиодом в состоянии Fault
+// Include
+#include "stdinc.h"
+#include "SysConfig.h"
 
-// Параметры АЦП
-#define BAT_ADC1_CH					4		// Номер канала АЦП батареи
-#define ADC_REF_VOLTAGE				3300.0f	// Опорное напряжение (в мВ)
-#define ADC_RESOLUTION				4095	// Разрешение АЦП
 
-#define VALUES_EXT_INFO_SIZE		300
+//Def
+//------------------------------------------------
+#define ADDRESS_FLAG_REGISTER                   0x20007FF0                      //Адрес регистра флагов
+#define ADDRESS_LOADED_PROGRAMM_START           0x08004800                      //Адрес начала памяти загруженной программы
+#define ADDRESS_FLASH_FIRST_PAGE                0x08000000                      //Адрес начала первой страницы FLASH памяти процессора
+//------------------------------------------------
+#define FLAG_RESET_FOR_PROG                     0x1111                          //Значение флага при перезагрузке процессора с последующим перепрограммированием
+#define FLAG_RESET                              0x4444                          //Значение флага при перезагрузке процессора без перепрограммирования
+//------------------------------------------------
+#define ADDRESS_FLASH_START_MCU                 0x8004000                       //Начальный адрес сектора FLASH памяти MCU для пользовательских задач
+#define MCU_FLASH_SIZE                          0x7FF                           //Размер FLASH памяти MCU для пользовательских задач
+//------------------------------------------------
 
-#endif //  __GLOBAL_H
+
+//Значения калибровочных коэффициентов по умолчанию
+#define K_DUT_U_DEFAULT                         978                            //Калибровочный коэффициент по умолчанию по напряжению
+#define K_DUT_I_DEFAULT                         712                             //Калибровочный коэффициент по умолчанию по току
+#define U1_OFFSET_DEFAULT                       40                              //Смещение нуля канала 1 по напряжению
+#define U2_OFFSET_DEFAULT                       40                              //Смещение нуля канала 1 по напряжению
+#define K_SC_SET_DEFAULT                        1000                            //Множитель по умолчанию калибровочного уравнения значения задания тока
+#define B_SC_SET_DEFAULT                        0                               //Смещение по умолчанию калибровочного уравнения значения задания тока
+#define K_U_CAL_DEFAULT                         990                             //Множитель по умолчанию калибровочного уравнения измерения напряжения
+#define B_U_CAL_DEFAULT                         42                              //Смещение по умолчанию калибровочного уравнения измерения напряжения
+#define CHANNEL_DEFAULT                         2                               //Канал измерения по умолчанию
+#define I1_OFFSET_DEFAULT                       74                              //Смещение нуля канала 1 по току
+#define I2_OFFSET_DEFAULT                       72                              //Смещение нуля канала 1 по току
+#define R_SHUNT_DEFAULT                         25                              //Сопротивление шунта по умолчанию 100 мкОм
+//
+#define UTM_I_MAX                               15500                           //Максимальное значение тока при котором вводится поправка к заданию
+#define SCTU_SC_VALUE_MIN                       100                             //Минимальное значение ударного тока SCTU, A
+#define SCTU_SC_SINE_MAX                        120000                           //Максимальное значение ударного тока установки SCTU при полусинусоидальной форме импульса, A
+#define SCTU_SC_TRAPEZE_MAX                     16000                           //Максимальное значение ударного тока установки SCTU при трапецеидальной форме импульса, A
+#define TRAPEZE_EDGE_TIME_MIN                   100                             //Минимальное фремя фронта трапеции, мкС
+#define TRAPEZE_EDGE_TIME_MAX                   1000                            //Максимальное фремя фронта трапеции, мкС
+#define ADC_REF_MV                              2980                            //Опорное напряжение АЦП, мВ
+#define WAVEFORM_SINE                           0xAAAA                          //Полусинусоидальная форма ударного тока
+#define WAVEFORM_TRAPEZE                        0xBBBB                          //Трапециедальная форма ударного тока
+#define CHANNEL_1                               1                               //Канал измерения 1
+#define CHANNEL_2                               2                               //Канал измерения 2
+#define DIODE                                   1234                            //Тип прибора - диод
+#define THYRISTOR                               5678                            //Тип прибора - тиристор
+#define ADC_BUFF_LENGTH                         4500                            //Размер массива, в который сохраняются данные измерения формы тока и напряжения DUT
+#define TIME_CHANGE_STATE                       1000                            //Через 5 сек после импульса можно менять статус блока
+#define GLOBAL_TIMEOUT							60000							//Время такта работы установки
+#define WAIT_TIMEOUT_VALUE			 GLOBAL_TIMEOUT-TIME_CHANGE_STATE
+#define EXTREMUM_START_POINT                    2150                            //Точка начала экстремума в массиве оцифрованных значений тока и напряжения
+#define EXTREMUM_STOP_POINT                     2350                            //Точка конца экстремума в массиве оцифрованных значений тока и напряжения
+#define VOLTAGE_MEASURE_MAX                     4000                            //Максимальное измеряемое напряжение, мВ
+#define SCTU_NUM_MAX                            39                              //Максимально возможно число блоков SCPC в установке SCTU
+#define ADC_SC_LENGTH               (EXTREMUM_STOP_POINT-EXTREMUM_START_POINT)                           //Размер буфера для подсчета одинаковых сэмплов АЦП
+#define ADC_I_SAMPLE_THRESHOLD                  5                               //Порог количества сэмплов с одинаоковой амплитудой для определения амплитуды тока
+#define AVERAGE_POINTS                          100                             //Количество точек усреднения
+//
+
+
+//Переменные
+extern Int64U CONTROL_TimeCounter;
+extern Int64U LED_BlinkTimeCounter;
+extern uint16_t ADC_BUF[ADC_BUFF_LENGTH];
+extern uint16_t ADC_SampleCount[ADC_SC_LENGTH];
+extern uint16_t ADC_SC_Shift;
+//
+
+#endif // __GLOBAL_H

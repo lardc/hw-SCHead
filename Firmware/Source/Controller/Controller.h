@@ -1,48 +1,56 @@
-﻿#ifndef __CONTROLLER_H
+﻿// -----------------------------------------
+// Logic controller
+// ----------------------------------------
+
+#ifndef __CONTROLLER_H
 #define __CONTROLLER_H
 
 // Include
 #include "stdinc.h"
+#include "Global.h"
+#include "ZwCAN.h"
+#include "BCCIMaster.h"
+#include "ZwIWDG.h"
+#include "ZwADC.h"
+#include "ZwDMA.h"
+#include "ZwSPI.h"
+#include "DataTable.h"
+#include "DeviceObjectDictionary.h"
+#include "ShuntAmplifier.h"
+#include "SCPC.h"
+//
 
-// Types
-typedef enum __DeviceState
-{
-	DS_None 			= 0,
-	DS_Fault 			= 1,
-	DS_Disabled 		= 2,
-	DS_Ready 			= 3,
-	DS_BatteryCharge 	= 4
-} DeviceState;
+//Defines
+#define DELAY_PULSE_START			10
+//
 
-typedef enum __DeviceSubState
-{
-	SS_None 			= 0,
-	SS_WaitingSync 		= 1,
-	SS_StartPulse		= 2
-} DeviceSubState;
 
-// Variables
-extern volatile Int64U CONTROL_TimeCounter;
-extern Int64U CONTROL_LEDTimeout;
-extern Int64U CONTROL_RechargeTimeout;
-extern Int64U CONTROL_AfterPulseTimeout;
-extern Int64U CONTROL_SynchronizationTimeout;
-extern Int64U CONTROL_PsBoardDisableTimeout;
+// Переменные
+//
+extern Int16U CONTROL_Values_U[VALUES_x_SIZE];
+extern Int16U CONTROL_Values_I[VALUES_x_SIZE];
+extern Int16U CONTROL_Values_U_Counter;
+extern Int16U CONTROL_Values_I_Counter;
+//
 
-extern Int16U CONTROL_ExtInfoCounter;
-extern Int16U CONTROL_ExtInfoData[];
 
-// Functions
+// Функции
+//
 void CONTROL_Init();
 void CONTROL_Idle();
-void CONTROL_CurrentEmergencyStop(Int16U Reason);
-DeviceSubState CONTROL_GetSubState();
-void CONTROL_SetDeviceState(DeviceState NewState);
-void CONTROL_SetDeviceSubState(DeviceSubState NewSubState);
-void CONTROL_InitBatteryChargeProcess();
-void CONTROL_HandleFanLogic(bool IsImpulse);
-void CONTROL_HandleLEDLogic(bool IsImpulse);
-void CONTROL_FinishProcess();
-void CONTROL_SwitchToProblem(Int16U Reason);
+void SetDeviceState(DeviceState NewState);
+void SetDeviceFault(Int16U Fault);
+void Delay_mS(uint64_t Delay);
+void IWDG_Control(void);
+void SCTU_Config(pBCCIM_Interface Interface);
+void SurgeCurrentProcess(pBCCIM_Interface Interface);
+void ErrorsClear(pBCCIM_Interface Interface);
+uint16_t ReadMailBox(uint16_t Nid, uint16_t MBox, bool ErrorCtrl);
+void UI_Dut_MeasureStart(void);
+void Utm_Measure();
+void SCTU_PulseSineConfig(pBCCIM_Interface Interface);
+void SCTU_PulseTrapezeConfig(pBCCIM_Interface Interface);
+void MeasureChannelSet(uint16_t ChannelNumber, bool ChannelInverse);
+//
 
 #endif // __CONTROLLER_H
