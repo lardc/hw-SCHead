@@ -6,12 +6,13 @@
 #include "DataTable.h"
 //
 #include "SysConfig.h"
+#include "FirmwareInfo.h"
 //
 
 
 // Constants
 //
-#define DT_EPROM_ADDRESS	0
+#define DT_EPROM_ADDRESS	0x08004000u
 
 
 // Variables

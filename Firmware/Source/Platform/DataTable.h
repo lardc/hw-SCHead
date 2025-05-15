@@ -14,12 +14,13 @@
 
 // Constants
 //
-#define DATA_TABLE_SIZE		128
-#define DATA_TABLE_NV_SIZE	64
+#define DATA_TABLE_SIZE			300
+#define DATA_TABLE_NV_SIZE		64
 //
-#define DATA_TABLE_NV_START     0
-#define DATA_TABLE_WR_START     64
-#define DATA_TABLE_WP_START     96
+#define DATA_TABLE_NV_START		0
+#define DATA_TABLE_WR_START		64
+#define DATA_TABLE_WP_START		96
+#define DATA_TABLE_FWINF_START	256
 
 /*
  * DATA TABLE START 				------------- 0
@@ -30,16 +31,19 @@
  *		END OF READ/WRITE AREA		------------- 95
  * 		START OF READ-ONLY AREA		------------- 96
  * 			[VOLATILE R-O AREA]
- *		END OF READ-ONLY AREA		------------- 127
- * DATA TABLE END 					------------- [127]
+ *		END OF READ-ONLY AREA		------------- 255
+ * 		START OF READ-ONLY FW INFO AREA	--------- 256
+ * 			[VOLATILE R-O AREA]
+ * 		END OF READ-ONLY FW INFO AREA	--------- 300
+ * DATA TABLE END 					------------- [300]
  */
 
 
 // Types
 //
 typedef void (*FUNC_SetDefaultValues)();
-typedef void (*FUNC_EPROM_WriteValues)(Int16U EPROMAddress, pInt16U Buffer, Int16U BufferSize);
-typedef void (*FUNC_EPROM_ReadValues)(Int16U EPROMAddress, pInt16U Buffer, Int16U BufferSize);
+typedef void (*FUNC_EPROM_WriteValues)(Int32U EPROMAddress, pInt16U Buffer, Int16U BufferSize);
+typedef void (*FUNC_EPROM_ReadValues)(Int32U EPROMAddress, pInt16U Buffer, Int16U BufferSize);
 //
 typedef struct __EPROMServiceConfig
 {
