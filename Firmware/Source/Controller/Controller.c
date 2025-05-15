@@ -14,7 +14,8 @@
 #include "BCCIMaster.h"
 #include "ZwTIM.h"
 #include "math.h"
-#include "ZwFlash.h"
+#include "ZwNFlash.h"
+#include "ZwADC.h"
 
 
 // Переменные
@@ -43,7 +44,7 @@ void CONTROL_Init()
   pInt16U EPDatas[EP_COUNT] = {CONTROL_Values_U, CONTROL_Values_I};
 
   // Конфигурация сервиса работы Data-table и EPROM
-  EPROMServiceConfig EPROMService = { &FLASH_SaveData, &FLASH_ReadData };
+  EPROMServiceConfig EPROMService = {(FUNC_EPROM_WriteValues)&NFLASH_WriteDT, (FUNC_EPROM_ReadValues)&NFLASH_ReadDT};
 
   // Инициализация data table
   DT_Init(EPROMService, FALSE);
@@ -275,9 +276,10 @@ static Boolean CONTROL_DispatchAction(Int16U ActionID, pInt16U pUserError)
       {
         uint16_t NodeID = DataTable[REG_SCPC_NID];
         uint16_t RegAddress = DataTable[REG_SCPC_ADDR_REG];
+        uint16_t RegData = 0;
 
-        BCCIM_Read16(&MASTER_DEVICE_CAN_Interface, NodeID, RegAddress);
-        DataTable[REG_SCPC_DATA_REG] = ReadMailBox(NodeID,Master_MBOX_R_16_A,true);
+        BCCIM_Read16(&MASTER_DEVICE_CAN_Interface, NodeID, RegAddress, &RegData);
+        DataTable[REG_SCPC_DATA_REG] = RegData;
 
         DataTable[REG_SCPC_NID] = 0;
       }
@@ -308,13 +310,6 @@ static Boolean CONTROL_DispatchAction(Int16U ActionID, pInt16U pUserError)
       break;
     }
 //-------------
-   case ACT_RESET_FOR_PROGRAMMING:      //Команда на рестарт для перепрограммирования блока LSLH
-    {
-      uint16_t Temp = FLAG_RESET_FOR_PROG;
-      STMflashWriteArray(ADDRESS_FLAG_REGISTER, &Temp, 1);
-      break;
-    }
-//-------------
    case ACT_FAULT_CLEAR:                //Команда на очистку Fault
     {
       SetDeviceState(DS_None);
@@ -342,13 +337,6 @@ static Boolean CONTROL_DispatchAction(Int16U ActionID, pInt16U pUserError)
         break;
       }
 //-------------
-  case ACT_RESET_DEVICE:                //Команда на перезагрузку блока LSLH
-    {
-      uint16_t Temp = FLAG_RESET;
-      STMflashWriteArray(ADDRESS_FLAG_REGISTER, &Temp, 1);
-      break;
-    }
-//-------------
   case ACT_SAVE_DT_TO_FLASH:            //Сохранить DataTable во Flash
     {
       DT_SaveNVPartToEPROM();
@@ -358,13 +346,6 @@ static Boolean CONTROL_DispatchAction(Int16U ActionID, pInt16U pUserError)
   case ACT_DT_RESET_TO_DEFAULT:         //Сброс DataTable в состояние по умолчанию
     {
       DT_ResetNVPartToDefault();
-      break;
-    }
-//-------------
-  case ACT_FLASH_CLEAR:                 //Очистка Flash
-    {
-      //Очищаем память
-      FLASH_Clear();
       break;
     }
 //-------------
@@ -1161,11 +1142,8 @@ void Delay_mS(uint64_t Delay)
 //------------------------------------------------------------------------------
 void IWDG_Control(void)
 {
-  uint32_t McuResetFlag = (*(__IO uint32_t*)ADDRESS_FLAG_REGISTER)&0xFFFF;
-  if((McuResetFlag!=FLAG_RESET_FOR_PROG)&&(McuResetFlag!=FLAG_RESET))
-  {
-    IWDG_Refresh();
-  }
+	if(BOOT_LOADER_VARIABLE != BOOT_LOADER_REQUEST)
+		IWDG_Refresh();
 }
 //------------------------------------------------------------------------------
 

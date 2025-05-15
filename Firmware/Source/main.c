@@ -1,13 +1,12 @@
 ﻿#include "main.h"
+#include "BCCIxParams.h"
 
-void main()
+int main()
 {
-  SetVectorTable(ADDRESS_LOADED_PROGRAMM_START);
-
-  Boolean clockInitResult;
+  SetVectorTable();
 
   //Настройка системной частоты тактирования
-  clockInitResult = SysClk_Config();
+  SysClk_Config();
 
   //Настройка портов
   IO_Config();
@@ -38,7 +37,7 @@ void main()
   DMA_Config();
 
   // Инициализация логика контроллера
-  InitializeController(clockInitResult);
+  CONTROL_Init();
 
   // Фоновый цикл
   while(TRUE)
@@ -55,9 +54,10 @@ void WatchDog_Config(void)
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-Boolean SysClk_Config(void)
+void SysClk_Config(void)
 {
-  return RCC_PLL_HSE_Config(QUARTZ_FREQUENCY, PREDIV_4, PLL_14);
+	RCC_PLL_HSE_Config(QUARTZ_FREQUENCY, PREDIV_4, PLL_14);
+	RCC_SysCfg_Clk_EN();
 }
 //------------------------------------------------------------------------------
 
@@ -122,14 +122,14 @@ void SPI_Config(void)
 //------------------------------------------------------------------------------
 void CAN_Config(void)
 {
-  ZwCAN_Init(CAN_1_ClkEN,SYSCLK,CAN_BOUDRATE);
+	 ZwCAN_Init(CAN_1_ClkEN,SYSCLK,CAN_BAUDRATE);
 }
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
 void UART_Config(void)
 {
-  USART_Init(USART1, SYSCLK, USART_BOUDRATE);
+  USART_Init(USART1, SYSCLK, USART_BAUDRATE);
   USART_Recieve_Interupt(USART1, 1, true);
 }
 //------------------------------------------------------------------------------
@@ -169,20 +169,13 @@ void DMA_Config(void)
 }
 //------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
-void InitializeController(Boolean GoodClock)
-{
-  CONTROL_Init();
-}
-// -----------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-void SetVectorTable(uint32_t Address)
+void SetVectorTable()
 {
-  __set_PRIMASK(1);
-  SCB->VTOR = (uint32_t)(ADDRESS_FLASH_FIRST_PAGE) | (Address & (uint32_t)0x1FFFFF80);
-  __set_PRIMASK(0);
-  __enable_irq();
+	__disable_irq();
+	SCB->VTOR = (uint32_t)BOOT_LOADER_MAIN_PR_ADDR;
+	__enable_irq();
 }
 //------------------------------------------------------------------------------
 

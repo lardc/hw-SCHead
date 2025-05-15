@@ -7,6 +7,6 @@
 
 // DSP includes
 #include <ZwBase.h>
-
+#include "stm32f30x.h"
 
 #endif // __STDINC_H

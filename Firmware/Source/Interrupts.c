@@ -6,7 +6,7 @@
 #include "ZwTIM.h"
 #include "DataTable.h"
 #include "ZwGPIO.h"
-#include "BCCIParams_Master.h"
+#include "BCCIMaster.h"
 #include "ZwCAN.h"
 #include "Controller.h"
 #include "DeviceProfile.h"

@@ -1,5 +1,6 @@
 ﻿#include "SCPC.h"
 
+#include "ZwCAN.h"
 
 //Переменные
 uint16_t SCPC_v20_Count = 0;
@@ -9,7 +10,6 @@ uint16_t SCPC_v20_Count = 0;
 //
 struct SCPC_Data_Struct SCPC_Data[SCTU_NUM_MAX];
 //
-
 
 
 //------------------------------------------------------------------------------
@@ -119,36 +119,31 @@ void SCPC_NotAnsCounterControl(uint16_t Nid, bool CounterValue)
 //------------------------------------------------------------------------------
 void SCPC_Read_Data(pBCCIM_Interface Interface, uint16_t SCPC_id, bool ErrorCtrl)
 {
-  uint16_t Data;
+  uint16_t Data = 0;
 
     //Считываем значение тока
     IWDG_Control();
-    BCCIM_Read16(Interface, SCPC_id, REG_SCPC_SC_PULSE_VALUE);
-    Data=ReadMailBox(SCPC_id,Master_MBOX_R_16_A,true);
+    BCCIM_Read16(Interface, SCPC_id, REG_SCPC_SC_PULSE_VALUE, &Data);
     SCPC_SaveData(SCPC_id, REG_SCPC_SC_PULSE_VALUE, Data);
     //
     //Считываем значение напряжения на конденсаторах
     IWDG_Control();
-    BCCIM_Read16(Interface, SCPC_id, REG_SCPC_BAT_VOLTAGE);
-    Data=ReadMailBox(SCPC_id,Master_MBOX_R_16_A,true);
+    BCCIM_Read16(Interface, SCPC_id, REG_SCPC_BAT_VOLTAGE, &Data);
     SCPC_SaveData(SCPC_id, REG_SCPC_BAT_VOLTAGE, Data);
     //
     //Считываем значение статуса
     IWDG_Control();
-    BCCIM_Read16(Interface, SCPC_id, REG_SCPC_DEV_STATE);
-    Data=ReadMailBox(SCPC_id,Master_MBOX_R_16_A,true);
+    BCCIM_Read16(Interface, SCPC_id, REG_SCPC_DEV_STATE, &Data);
     SCPC_SaveData(SCPC_id, REG_SCPC_DEV_STATE, Data);
     //
     //Считываем значение Fault
     IWDG_Control();
-    BCCIM_Read16(Interface, SCPC_id, REG_SCPC_FAULT_REASON);
-    Data=ReadMailBox(SCPC_id,Master_MBOX_R_16_A,true);
+    BCCIM_Read16(Interface, SCPC_id, REG_SCPC_FAULT_REASON, &Data);
     SCPC_SaveData(SCPC_id, REG_SCPC_FAULT_REASON, Data);
     //
     //Считываем значение Warning
     IWDG_Control();
-    BCCIM_Read16(Interface, SCPC_id, REG_SCPC_WARNING);
-    Data=ReadMailBox(SCPC_id,Master_MBOX_R_16_A,true);
+    BCCIM_Read16(Interface, SCPC_id, REG_SCPC_WARNING, &Data);
     SCPC_SaveData(SCPC_id, REG_SCPC_WARNING, Data);
     //
 }
@@ -293,14 +288,14 @@ void SCPCFind(pBCCIM_Interface Interface)
   while(Nid<(DataTable[REG_SCTU_SCPC_NUM]+SCPC0_Adr))
   {
     //Считываем версию блока
-    BCCIM_Read16(Interface, Nid, REG_SCPC_VERSION);
+	uint16_t Version = 0;
+    BCCIM_Read16(Interface, Nid, REG_SCPC_VERSION, &Version);
     Delay_mS(2);
     //
 
     //Если ответ поступил, то сохраняем текущий Nid в таблицу
     if(ZwCAN_GetMailbox(Master_MBOX_R_16_A).DataReady)
     {
-      uint16_t Version=ReadMailBox(Nid,Master_MBOX_R_16_A,true);
       SCPC_Save_Nid_Version(Nid,Version);
 
       //Считаем количество блоков v.2.0

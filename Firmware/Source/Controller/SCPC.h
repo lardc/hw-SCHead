@@ -5,11 +5,12 @@
 #ifndef __SCPC_H
 #define __SCPC_H
 
+#include "ZwCAN.h"
 #include "DataTable.h"
 #include "DeviceObjectDictionary.h"
 #include "stdinc.h"
 #include "Global.h"
-#include "ZwCAN.h"
+#include "BCCIMaster.h"
 
 //Defines
 
@@ -53,6 +54,9 @@
 #define SCPC_VERSION_20                         20                              //Версия 2.0 блока SCPC
 #define SCPC_VERSION_11                         11                              //Версия 1.1 блока SCPC
 //
+#define Master_MBOX_W_16_A			1
+#define Master_MBOX_R_16_A			3
+#define Master_MBOX_C_A				5
 
 //Состояния блока SCPC
 typedef enum __SCPCState

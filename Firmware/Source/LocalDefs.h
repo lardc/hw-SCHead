@@ -10,7 +10,6 @@
 #define FALSE   false
 #define TRUE    true
 #define pBoolean Boolean*
-#define NULL ((void*)0)
 
 #endif // __LOCALDEFS_H
 

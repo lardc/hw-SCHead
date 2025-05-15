@@ -13,11 +13,13 @@
 #include "Controller.h"
 #include "ZwDMA.h"
 #include "ZwSPI.h"
+#include "ZwADC.h"
+#include "SysConfig.h"
 
 
 //Functions
 extern void CONTROL_Idle();
-Boolean SysClk_Config(void);
+void SysClk_Config(void);
 void IO_Config(void);
 void CAN_Config(void);
 void UART_Config();
@@ -26,7 +28,7 @@ void CONTROL_Init(void);
 void Timer6_Config(void);
 void Timer7_Config(void);
 void WatchDog_Config(void);
-void SetVectorTable(uint32_t Address);
+void SetVectorTable();
 void Timer3_Config(void);
 void ADC_Init(void);
 void DMA_Config(void);

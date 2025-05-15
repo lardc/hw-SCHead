@@ -7,7 +7,6 @@
 #define ACT_BAT_START_CHARGE                    2                               //Команда блокам SCPowerCell на заряд батареи конденсаторов
 #define ACT_FAULT_CLEAR                         3                               //Очистка fault
 #define ACT_WARNING_CLEAR                       4                               //Очистка warning
-#define ACT_RESET_DEVICE                        5                               //Перезапуск процессора
 //-----------
 #define ACT_SC_PULSE_CONFIG                     100                             //Конфигурация значения ударного тока
 #define ACT_SC_PULSE_START                      101                             //Запуск формирования импульса ударного тока
@@ -24,7 +23,6 @@
 #define ACT_SAVE_DT_TO_FLASH                    200                             //Сохранение пользовательских данных во FLASH процессора
 #define ACT_RESTORE_DT_FROM_FLASH               201                             //Восстановление данных из FLASH
 #define ACT_DT_RESET_TO_DEFAULT                 202                             //Сброс DataTable в состояние по умолчанию
-#define ACT_FLASH_CLEAR                         203                             //Очистка пользовательской FLASH памяти
 //
 
 //Регистры

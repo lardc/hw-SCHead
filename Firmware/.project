@@ -55,6 +55,16 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
+			<name>Source/Interface/BCCIMaster.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/hw-STM32-libs/Interface/BCCIMaster.c</locationURI>
+		</link>
+		<link>
+			<name>Source/Interface/BCCIMaster.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/hw-STM32-libs/Interface/BCCIMaster.h</locationURI>
+		</link>
+		<link>
 			<name>Source/Interface/BCCISlave.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/hw-STM32-libs/Interface/BCCISlave.c</locationURI>
@@ -198,16 +208,6 @@
 			<name>Source/Library/ZwIWDG.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/hw-STM32-libs/Library/ZwIWDG.h</locationURI>
-		</link>
-		<link>
-			<name>Source/Library/ZwNCAN.c</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/hw-STM32-libs/Library/ZwNCAN.c</locationURI>
-		</link>
-		<link>
-			<name>Source/Library/ZwNCAN.h</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/hw-STM32-libs/Library/ZwNCAN.h</locationURI>
 		</link>
 		<link>
 			<name>Source/Library/ZwNFLASH.c</name>

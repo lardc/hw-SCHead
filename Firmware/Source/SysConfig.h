@@ -5,14 +5,20 @@
 
 // Include
 #include <ZwBase.h>
+#include "ZwGPIO.h"
 
+// Flash loader options
+#define BOOT_LOADER_VARIABLE			(*((volatile uint32_t *)0x20000000))
+#define BOOT_LOADER_REQUEST				0x12345678
+#define BOOT_LOADER_MAIN_PR_ADDR		0x08004800
+//-----------------------
 //Define
 //
 #define SYSCLK                                  70000000                        //Тактовая частота системной шины процессора
 #define QUARTZ_FREQUENCY                        20000000                        //Частота кварца
 //-----------------------
 //USART
-#define USART_BOUDRATE                          115200                          //Скорость USART
+#define USART_BAUDRATE                          115200                          //Скорость USART
 #define USART_FIFOlen                           32                              //Длина FIFO USART
 //-----------------------
 //Timer
@@ -20,7 +26,7 @@
 #define TIMER3_uS                               1000                            //Период работы таймера 3
 //-----------------------
 //CAN
-#define CAN_BOUDRATE                            100000                          //Битрейт CAN
+#define CAN_BAUDRATE                            100000                          //Битрейт CAN
 #define MASTER_DEVICE_CAN_ADDRESS				8                               //NodeID в режиме master
 #define SLAVE_DEVICE_CAN_ADDRESS				8                               //NodeID в режиме slave
 #define TYPE_DEVICE                             MASTER_DEVICE                   //Тип устройства master/slave
@@ -58,6 +64,7 @@
 #define ENABLE_LOCKING				FALSE
 #define VALUES_x_SIZE				EP_SIZE
 #define	SCCI_TIMEOUT_TICKS  		        1000
+#define	BCCIM_TIMEOUT_TICKS			50				// Таймаут протоколоа мастер BCCI (в мс)
 //
 
 #endif // __SYSCONFIG_H

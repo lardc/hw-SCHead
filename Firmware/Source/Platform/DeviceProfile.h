@@ -37,11 +37,11 @@ void DEVPROFILE_UpdateCANDiagStatus();
 Int32U DEVPROFILE_ReadValue32(pInt16U pTable, Int16U Index);
 // Write 32-bit value to data table
 void DEVPROFILE_WriteValue32(pInt16U pTable, Int16U Index, Int32U Data);
-static Int16U DEVPROFILE_CallbackReadX(Int16U Endpoint, pInt16U *Buffer, Boolean Streamed,
+ Int16U DEVPROFILE_CallbackReadX(Int16U Endpoint, pInt16U *Buffer, Boolean Streamed,
 									   Boolean RepeatLastTransmission, void *EPStateAddress, Int16U MaxNonStreamSize);
 
 void DEVPROFILE_ResetEPReadState();
 void DEVPROFILE_ResetScopes(Int16U ResetPosition);
 void DEVPROFILE_InitEPWriteService(pInt16U Indexes, pInt16U Sizes, pInt16U *Counters, pInt16U *Datas);
-static Boolean DEVPROFILE_CallbackWriteX(Int16U Endpoint, pInt16U Buffer, Boolean Streamed, Int16U Length, void *EPStateAddress);
+ Boolean DEVPROFILE_CallbackWriteX(Int16U Endpoint, pInt16U Buffer, Boolean Streamed, Int16U Length, void *EPStateAddress);
 #endif // __DEV_PROFILE_H

@@ -13,6 +13,7 @@
 #include "Constraints.h"
 #include "ZwCAN.h"
 #include "ZwSCI.h"
+#include "BCCIMaster.h"
 
 // Types
 //
@@ -51,7 +52,6 @@ static Boolean *MaskChangesFlag;
 
 // Forward functions
 //
-static Boolean DEVPROFILE_Validate32(Int16U Address, Int32U Data);
 static Boolean DEVPROFILE_Validate16(Int16U Address, Int16U Data);
 static Boolean DEVPROFILE_DispatchAction(Int16U ActionID, pInt16U UserError);
 static void DEVPROFILE_FillWRPartDefault();
@@ -70,25 +70,22 @@ void DEVPROFILE_Init(xCCI_FUNC_CallbackAction SpecializedDispatch, Boolean *Mask
 	RS232_IOConfig.IO_ReceiveArray16 = &ZwSCI_ReceiveArray16;
 	RS232_IOConfig.IO_GetBytesToReceive = &ZwSCI_GetBytesToReceive;
 	RS232_IOConfig.IO_ReceiveByte = &ZwSCI_ReceiveChar;
-	CAN_IOConfig.IO_SendMessage = &ZwCAN_SendMessage;
-	CAN_IOConfig.IO_SendMessageEx = &ZwCAN_SendMessageEx;
+	CAN_IOConfig.IO_SendMessage = &ZwCAN_SendMessage_Void;
+	CAN_IOConfig.IO_SendMessageEx = &ZwCAN_SendMessageEx_Void;
 	CAN_IOConfig.IO_GetMessage = &ZwCAN_GetMessage;
 	CAN_IOConfig.IO_IsMessageReceived = &ZwCAN_IsMessageReceived;
-	CAN_IOConfig.IO_ConfigMailbox = &ZwCAN_ConfigMailbox;
+	CAN_IOConfig.IO_ConfigMailbox = &ZwCAN_ConfigMailbox_BCCI;
 
 	// Init service
-	X_ServiceConfig.Read32Service = &DEVPROFILE_ReadValue32;
-	X_ServiceConfig.Write32Service = &DEVPROFILE_WriteValue32;
 	X_ServiceConfig.UserActionCallback = &DEVPROFILE_DispatchAction;
 	X_ServiceConfig.ValidateCallback16 = &DEVPROFILE_Validate16;
-	X_ServiceConfig.ValidateCallback32 = &DEVPROFILE_Validate32;
 
 	// Init interface driver
 	SCCI_Init(&DEVICE_RS232_Interface, &RS232_IOConfig, &X_ServiceConfig, (pInt16U)DataTable,
 			  DATA_TABLE_SIZE, SCCI_TIMEOUT_TICKS, &RS232_EPState);
 	BCCI_Init(&DEVICE_CAN_Interface, &CAN_IOConfig, &X_ServiceConfig, (pInt16U)DataTable,
 			  DATA_TABLE_SIZE, &CAN_EPState);
-        BCCIM_Init(&MASTER_DEVICE_CAN_Interface, &CAN_IOConfig);
+    BCCIM_Init(&MASTER_DEVICE_CAN_Interface, &CAN_IOConfig, BCCIM_TIMEOUT_TICKS, &CONTROL_TimeCounter);
 
 	// Set write protection
 	SCCI_AddProtectedArea(&DEVICE_RS232_Interface, DATA_TABLE_WP_START, DATA_TABLE_SIZE - 1);
@@ -166,18 +163,18 @@ static Boolean DEVPROFILE_Validate16(Int16U Address, Int16U Data)
 }
 // ----------------------------------------
 
-static Boolean DEVPROFILE_Validate32(Int16U Address, Int32U Data)
-{
-	if(ENABLE_LOCKING && !UnlockedForNVWrite && (Address < DATA_TABLE_WR_START))
-		return FALSE;
-
-	return TRUE;
-}
-// ----------------------------------------
-
 static Boolean DEVPROFILE_DispatchAction(Int16U ActionID, pInt16U UserError)
 {
-  return (ControllerDispatchFunction) ? ControllerDispatchFunction(ActionID, UserError) : FALSE;
+	switch(ActionID)
+	{
+		case ACT_RESET_FOR_PROGRAMMING:
+			BOOT_LOADER_VARIABLE = BOOT_LOADER_REQUEST;
+			break;
+
+		default:
+			return (ControllerDispatchFunction) ? ControllerDispatchFunction(ActionID, UserError) : FALSE;
+	}
+	return TRUE;
 }
 // ----------------------------------------
 
@@ -204,7 +201,7 @@ void DEVPROFILE_InitEPService(pInt16U Indexes, pInt16U Sizes, pInt16U *Counters,
 }
 // ----------------------------------------
 
-static Int16U DEVPROFILE_CallbackReadX(Int16U Endpoint, pInt16U *Buffer, Boolean Streamed,
+Int16U DEVPROFILE_CallbackReadX(Int16U Endpoint, pInt16U *Buffer, Boolean Streamed,
 									   Boolean RepeatLastTransmission, void *EPStateAddress, Int16U MaxNonStreamSize)
 {
 	Int16U pLen;
@@ -293,7 +290,7 @@ void DEVPROFILE_InitEPWriteService(pInt16U Indexes, pInt16U Sizes, pInt16U *Coun
 }
 // ----------------------------------------
 
-static Boolean DEVPROFILE_CallbackWriteX(Int16U Endpoint, pInt16U Buffer, Boolean Streamed, Int16U Length, void *EPStateAddress)
+Boolean DEVPROFILE_CallbackWriteX(Int16U Endpoint, pInt16U Buffer, Boolean Streamed, Int16U Length, void *EPStateAddress)
 {
   pEPState epState;
   pEPStates epStates = (pEPStates)EPStateAddress;
