@@ -48,7 +48,7 @@ void CONTROL_Init()
 
   // Инициализация data table
   DT_Init(EPROMService, FALSE);
- // DT_SaveFirmwareInfo(CAN_SLAVE_NID, CAN_MASTER_NID);
+  DT_SaveFirmwareInfo(CAN_SLAVE_NID, CAN_MASTER_NID);
 
   // Сброс значений
   DEVPROFILE_ResetControlSection();

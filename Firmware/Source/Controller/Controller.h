@@ -18,6 +18,7 @@
 #include "DeviceObjectDictionary.h"
 #include "ShuntAmplifier.h"
 #include "SCPC.h"
+#include "BCCIxParams.h"
 //
 
 //Defines

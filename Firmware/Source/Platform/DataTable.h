@@ -69,7 +69,6 @@ void DT_SaveNVPartToEPROM();
 void DT_ResetNVPart(FUNC_SetDefaultValues SetFunc);
 // Reset volatile read-write part of data table
 void DT_ResetWRPart(FUNC_SetDefaultValues SetFunc);
-
 void DT_ResetNVPartToDefault(void);
-
+void DT_SaveFirmwareInfo(Int16U SlaveNID, Int16U MasterNID);
 #endif // __DATA_TABLE_H

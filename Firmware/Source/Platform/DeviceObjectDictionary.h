@@ -101,6 +101,12 @@
 #define REG_INFO_K_SHUNT_AMP                    113                             //Текущее значение коэффициента усиления SCShuntAmplifier
 //
 
+#define REG_FWINFO_SLAVE_NID			256	// Device CAN slave node ID
+#define REG_FWINFO_MASTER_NID			257	// Device CAN master node ID (if presented)
+// 258 - 259
+#define REG_FWINFO_STR_LEN				260	// Length of the information string record
+#define REG_FWINFO_STR_BEGIN			261	// Begining of the information string record
+
 // ENDPOINTS
 //
 #define EP16_Data_U		                1	                        // Оцифрованные данные ударного тока
