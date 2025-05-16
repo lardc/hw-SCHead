@@ -45,7 +45,7 @@ _Min_Stack_Size = 0x100; /* required amount of stack */
 MEMORY
 {
   LOADER (r)      : ORIGIN = 0x08000000, LENGTH = 0x04000 /* 16K */  
-  FLASH (rx)      : ORIGIN = 0x08004800, LENGTH = 0x1B800 /* 94K */
+  FLASH (rx)      : ORIGIN = 0x08004800, LENGTH = 0x1B800 /* 110K */
   DATA_TAB (r)    : ORIGIN = 0x08004000, LENGTH = 0x00800 /* 2K */
   
   RAM_FL (rw)     : ORIGIN = 0x20000000, LENGTH = 4       /* 4 bytes */

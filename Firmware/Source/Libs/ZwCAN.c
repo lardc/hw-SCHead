@@ -1,4 +1,4 @@
-// Includes
+п»ї// Includes
 //
 #include "ZwCAN.h"
 #include "stm32f30x.h"
@@ -14,7 +14,7 @@ uint32_t MasterAddress = 0;
 
 // Functions
 //
-// Сброс модуля CAN
+// РЎР±СЂРѕСЃ РјРѕРґСѓР»СЏ CAN
 void CAN_DeInit(void)
 {
 	RCC->APB1RSTR |= RCC_APB1RSTR_CAN1RST;
@@ -22,7 +22,7 @@ void CAN_DeInit(void)
 }
 //-----------------------------------------------
 
-// Инициализация CAN
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ CAN
 void CAN_Init(uint32_t SystemFrequency, uint32_t Baudrate)
 {
 	static float BitTime, SystemClockTime, tq, tbs1, tbs2;
@@ -38,12 +38,12 @@ void CAN_Init(uint32_t SystemFrequency, uint32_t Baudrate)
 	TS1 = (uint16_t)(tbs1 / tq - 1);
 	TS2 = (uint16_t)(tbs2 / tq - 1);
 
-    // Без автоматической ретрансляции, запрос инициализации
+    // Р‘РµР· Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕР№ СЂРµС‚СЂР°РЅСЃР»СЏС†РёРё, Р·Р°РїСЂРѕСЃ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
 	CAN1->MCR = (/*CAN_MCR_NART |*/ CAN_MCR_INRQ);
-    // Разрешение прерывания при приеме
+    // Р Р°Р·СЂРµС€РµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёСЏ РїСЂРё РїСЂРёРµРјРµ
 	CAN1->IER = CAN_IER_FMPIE0;
 
-	//Настройка скорости CAN
+	//РќР°СЃС‚СЂРѕР№РєР° СЃРєРѕСЂРѕСЃС‚Рё CAN
 	CAN1->BTR = 0x0;
 	CAN1->BTR |= TS2 << 20; // 4 TS2
 	CAN1->BTR |= TS1 << 16; // 9 TS1
@@ -51,37 +51,37 @@ void CAN_Init(uint32_t SystemFrequency, uint32_t Baudrate)
 }
 //-----------------------------------------------
 
-// Инициализация фильтров CAN
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С„РёР»СЊС‚СЂРѕРІ CAN
 void CAN_Filter(uint32_t id)
 {
-	CAN1->FMR |= CAN_FMR_FINIT;			//Разблокировать инициализацию фильтров
-	CAN1->FA1R &= ~(uint32_t)(1);		//Деактивация фильтра 0
+	CAN1->FMR |= CAN_FMR_FINIT;			//Р Р°Р·Р±Р»РѕРєРёСЂРѕРІР°С‚СЊ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЋ С„РёР»СЊС‚СЂРѕРІ
+	CAN1->FA1R &= ~(uint32_t)(1);		//Р”РµР°РєС‚РёРІР°С†РёСЏ С„РёР»СЊС‚СЂР° 0
 
-	CAN1->FS1R |= (uint32_t)(1);		// 32 битный режим регистра фильтров
-	CAN1->FM1R &= ~(uint32_t)(1);		//Режим list
-	CAN1->FFA1R &= ~(uint32_t)(1);		//Сообщение сохраняется в FIFO 0
+	CAN1->FS1R |= (uint32_t)(1);		// 32 Р±РёС‚РЅС‹Р№ СЂРµР¶РёРј СЂРµРіРёСЃС‚СЂР° С„РёР»СЊС‚СЂРѕРІ
+	CAN1->FM1R &= ~(uint32_t)(1);		//Р РµР¶РёРј list
+	CAN1->FFA1R &= ~(uint32_t)(1);		//РЎРѕРѕР±С‰РµРЅРёРµ СЃРѕС…СЂР°РЅСЏРµС‚СЃСЏ РІ FIFO 0
 
 	CAN1->sFilterRegister[0].FR1 = (uint32_t)(id << 21); // ID
 	CAN1->sFilterRegister[0].FR2 = (uint32_t)(id << 21); // ID
 
-	CAN1->FA1R |= (uint32_t)(1);		//Активировать фильтр 0
+	CAN1->FA1R |= (uint32_t)(1);		//РђРєС‚РёРІРёСЂРѕРІР°С‚СЊ С„РёР»СЊС‚СЂ 0
 
-	CAN1->FMR &= ~CAN_FMR_FINIT;    	//Заблокировать инициализацию фильтров
+	CAN1->FMR &= ~CAN_FMR_FINIT;    	//Р—Р°Р±Р»РѕРєРёСЂРѕРІР°С‚СЊ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЋ С„РёР»СЊС‚СЂРѕРІ
 }
 //-----------------------------------------------
 
-// Старт модуля CAN
+// РЎС‚Р°СЂС‚ РјРѕРґСѓР»СЏ CAN
 void CAN_Start(void)
 {
 	CAN1->BTR &= ~(CAN_BTR_SILM | CAN_BTR_LBKM);
-	CAN1->MCR &= ~CAN_MCR_INRQ;         //Нормальный режим работы
-	while (CAN1->MSR & CAN_MCR_INRQ);   //Ожидание переключения
+	CAN1->MCR &= ~CAN_MCR_INRQ;         //РќРѕСЂРјР°Р»СЊРЅС‹Р№ СЂРµР¶РёРј СЂР°Р±РѕС‚С‹
+	while (CAN1->MSR & CAN_MCR_INRQ);   //РћР¶РёРґР°РЅРёРµ РїРµСЂРµРєР»СЋС‡РµРЅРёСЏ
 
 	NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
 }
 //-----------------------------------------------
 
-// Ожидание готовности CAN
+// РћР¶РёРґР°РЅРёРµ РіРѕС‚РѕРІРЅРѕСЃС‚Рё CAN
 void CAN_WaitReady(void)
 {
 	while (!(CAN1->TSR & CAN_TSR_TME0));
@@ -102,11 +102,11 @@ void ZwCAN_RecieveData(void)
 		uint32_t MasterAddressTemp = (MsgID >> MASTER_DEV_ADDR_MPY) & MASTER_ADDRESS_MASK;
 
 		if (MasterAddressTemp == MASTER_DEVICE_CAN_ADDRESS)
-			MsgID &= MASTER_ID_MASK;	// Данные идут от slave
+			MsgID &= MASTER_ID_MASK;	// Р”Р°РЅРЅС‹Рµ РёРґСѓС‚ РѕС‚ slave
 		else
 		{
 			MasterAddress = MasterAddressTemp;
-			MsgID &= SLAVE_ID_MASK;		// Данные идут от master
+			MsgID &= SLAVE_ID_MASK;		// Р”Р°РЅРЅС‹Рµ РёРґСѓС‚ РѕС‚ master
 		}
 	}
 
@@ -114,14 +114,14 @@ void ZwCAN_RecieveData(void)
 	while ((MsgID != MailBox[MailBoxCNT].MsgID) && (MailBoxCNT < MAILBOXmax))
 	{
 		MailBoxCNT++;
-	}	// Ищем свой маилбокс
+	}	// РС‰РµРј СЃРІРѕР№ РјР°РёР»Р±РѕРєСЃ
 
 	if (MailBoxCNT < MAILBOXmax)
 	{
-		// Сохраняем младший байт
+		// РЎРѕС…СЂР°РЅСЏРµРј РјР»Р°РґС€РёР№ Р±Р°Р№С‚
 		MailBox[MailBoxCNT].DWORD0 = WordSwap(CAN1->sFIFOMailBox[0].RDLR, MailBox[MailBoxCNT].DataLen);
 
-		// Сохраняем старший байт
+		// РЎРѕС…СЂР°РЅСЏРµРј СЃС‚Р°СЂС€РёР№ Р±Р°Р№С‚
 		MailBox[MailBoxCNT].DWORD1 = WordSwap(CAN1->sFIFOMailBox[0].RDHR, MailBox[MailBoxCNT].DataLen);
 
 		MailBox[MailBoxCNT].DataReady = 1;

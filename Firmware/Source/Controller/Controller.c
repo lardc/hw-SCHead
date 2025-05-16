@@ -60,7 +60,7 @@ void CONTROL_Init()
   DEVPROFILE_ResetControlSection();
 
   //Определение nid блоков, которые подключены
-  //SCPCFind(&MASTER_DEVICE_CAN_Interface);
+  SCPCFind(&MASTER_DEVICE_CAN_Interface);
   IWDG_Control();
 }
 // -----------------------------------------------------------------------------
