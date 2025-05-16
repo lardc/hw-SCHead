@@ -60,7 +60,8 @@ void CONTROL_Init()
   DEVPROFILE_ResetControlSection();
 
   //Определение nid блоков, которые подключены
-  SCPCFind(&MASTER_DEVICE_CAN_Interface);
+  //SCPCFind(&MASTER_DEVICE_CAN_Interface);
+  IWDG_Control();
 }
 // -----------------------------------------------------------------------------
 
@@ -368,8 +369,6 @@ static Boolean CONTROL_DispatchAction(Int16U ActionID, pInt16U pUserError)
 
 void CONTROL_Idle()
 {
-  IWDG_Control();
-
   //Зупуск заряда конденсаторов в блоках SCPC
   if(DataTable[REG_DEV_STATE]==DS_BatteryChargeStart)
   {
@@ -465,6 +464,8 @@ void CONTROL_Idle()
   
 
   DEVPROFILE_ProcessRequests();
+
+  IWDG_Control();
 }
 // -----------------------------------------------------------------------------
 

@@ -11,15 +11,14 @@ int main()
   //Настройка портов
   IO_Config();
 
-  //Настройка SPI
-  SPI_Config();
-  //
+  //Настройка UART
+  UART_Config();
 
   //Настройка CAN
   CAN_Config();
 
-  //Настройка UART
-  UART_Config();
+  //Настройка SPI
+  SPI_Config();
 
   //Timer 3
   Timer3_Config();
@@ -27,23 +26,23 @@ int main()
   //Timer 15
   Timer15_Config();
 
-  //Настройка сторожевого таймера
-  WatchDog_Config();
-
   //Настройка АЦП
   ADC_Init();
 
   //Настройка DMA
   DMA_Config();
 
-  // Инициализация логика контроллера
+  //Настройка сторожевого таймера
+  WatchDog_Config();
+
+  //Инициализация логики работы контроллера
   CONTROL_Init();
 
-  // Фоновый цикл
-  while(TRUE)
-  {
-   CONTROL_Idle();
-  }
+  //Основной цикл
+  while(true)
+	CONTROL_Idle();
+
+  return 0;
 }
 
 //------------------------------------------------------------------------------

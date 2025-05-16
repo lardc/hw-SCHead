@@ -3,6 +3,7 @@
 #include "ZwCAN.h"
 #include "stm32f30x.h"
 #include "BCCIxParams.h"
+#include "Delay.h"
 
 
 // Variables
@@ -168,6 +169,7 @@ Boolean ZwCAN_SendMessage(Int16U mBox, pCANMessage Data)
 
 	CAN1->sTxMailBox[0].TIR |= 1; // TX
 
+
 	while ((!(CAN1->TSR & CAN_TSR_TME0)) && (TimeOut < 1000))
 		TimeOut++;
 
@@ -328,8 +330,8 @@ void ZwCAN_SendMessageEx_Void(Int16U mBox, pCANMessage Data, Boolean AlterMessag
     ZwCAN_SendMessageEx(mBox, Data, AlterMessageID, AlterMessageLength);
 }
 //-----------------------------------------------
-void ZwCAN_ConfigMailbox_BCCI(Int16U mBox, Int32U MsgID, Int16U DataLen)
+void ZwCAN_ConfigMailbox_BCCI(Int16U mBox, Int32U MsgID, Int16U DataLen, bool IsReceiveMailbox, Int32U Mask)
 {
-	ZwCAN_ConfigMailbox(mBox, MsgID, ZW_CAN_RECEIVE_MAILBOX, DataLen, 0, 0, 0);
+    ZwCAN_ConfigMailbox(mBox, MsgID, IsReceiveMailbox, DataLen, Mask, 0, 0);
 }
 //-----------------------------------------------

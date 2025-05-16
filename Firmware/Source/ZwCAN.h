@@ -85,7 +85,7 @@ Boolean ZwCAN_SendMessage(Int16U mBox, pCANMessage Data);
 void ZwCAN_SendMessage_Void(Int16U mBox, pCANMessage Data);
 void ZwCAN_ConfigMailbox(Int16U mBox, Int32U MsgID, Boolean Dir, Int16U DataLen, Int32U Flags,
 	Int16U TransmitPriority, Int32U LAM);
-void ZwCAN_ConfigMailbox_BCCI(Int16U mBox, Int32U MsgID, Int16U DataLen);
+void ZwCAN_ConfigMailbox_BCCI(Int16U mBox, Int32U MsgID, Int16U DataLen, bool IsReceiveMailbox, Int32U Mask);
 void ZwCAN_Init(Int32U CANx, uint32_t SystemFrequency, uint32_t Baudrate);
 void ZwCAN_RecieveData(void);
 void ZwCAN_MessageReceivedReset(Int16U mBox);
