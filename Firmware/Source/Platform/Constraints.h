@@ -11,7 +11,9 @@
 #include "DataTable.h"
 #include "Global.h"
 
-
+#define PULSE_DURATION_MIN 				10000  // в мкс
+#define PULSE_DURATION_MAX 				20000  // в мкс
+#define PULSE_DURATION_DEF 				20000  // в мкс
 // Types
 //
 typedef struct __TableItemConstraint

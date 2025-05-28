@@ -28,6 +28,7 @@
 #define REG_SCPC_SC_PULSE_VALUE                 64                              //Значение ударного тока блока SCPC
 #define REG_SCPC_WAVEFORM_TYPE                  65                              //Тип формы импульса ударного тока
 #define REG_SCPC_TRAPEZE_EDGE_TIME              66                              //Время длительности фронта трапеции, мкС
+#define REG_SCPC_PULSE_DURATION					68								//Длительность импульса (в мкс)
 #define REG_SCPC_BAT_VOLTAGE                    96                              //Напряжение батареи, В/10
 #define REG_SCPC_VERSION                        95                              //Версия блока
 #define REG_SCPC_DEV_STATE                      97                              //Состояние блока

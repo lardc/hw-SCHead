@@ -74,11 +74,13 @@
 #define REG_K_SHUNT_AMP                         73                              //Задаваемое значение усиления SCShuntAmplifier
 //
 #define REG_SCPC_DATA_REG                       74                              //Регистр данных, которые надо записать в регистр определенного блока SCPC
-#define REG_SCPC_ADDR_REG                       75                              //Регистр адрерас регистра блока SCPC, в который надо записать данные
+#define REG_SCPC_ADDR_REG                       75                              //Регистр адреса регистра блока SCPC, в который надо записать данные
 #define REG_SCPC_COMM                           76                              //Регистр команды, которую надо вызвать в блоке SCPC
 #define REG_SCPC_NID                            77                              //Регистр NID блока SCPC
 //
 #define REG_SCPC_EMULATION						78								//(1 - SCPC в режиме эмуляции, 0 - эмуляция SCPC выключена)
+
+#define REG_PULSE_DURATION					80								//Задаваемая длительность импульса для SCPC (в мкс)
 //
 #define REG_DUT_U                               96                              //Измеренное значение прямого напряжения, мВ
 #define REG_DUT_I_L                             97                              //Измеренное значение ударного тока, А (младшая часть)
