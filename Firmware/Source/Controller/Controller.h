@@ -22,7 +22,7 @@
 //
 
 //Defines
-#define DELAY_PULSE_START			10
+#define DELAY_PULSE_START			9 + DataTable[REG_PULSE_DURATION]
 //
 
 

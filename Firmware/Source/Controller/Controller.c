@@ -385,11 +385,11 @@ void CONTROL_Idle()
 
   //Если состояние установки DS_PulseStart, то формируем импульс тока
   if(DataTable[REG_DEV_STATE]==DS_PulseStart)
-  {
-	DEVPROFILE_ResetScopes(0);
-	SurgeCurrentProcess(&MASTER_DEVICE_CAN_Interface);
-	DEVPROFILE_ResetEPReadState();
-  }
+	{
+		DEVPROFILE_ResetScopes(0);
+		SurgeCurrentProcess(&MASTER_DEVICE_CAN_Interface);
+		DEVPROFILE_ResetEPReadState();
+	}
 
   //Если установка перешла в состояние DS_PulseEnd, то через время TIME_CHANGE_STATE
   //установка переходит в состояние DS_BatteryChargeWait
@@ -867,6 +867,7 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 void SurgeCurrentProcess(pBCCIM_Interface Interface)
 {
   uint16_t Nid_Count=0;
+  Int16U PulseCount = 0;
 
   if(DataTable[REG_DUT_TYPE]==THYRISTOR)
   {
@@ -886,25 +887,32 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 
   Delay_mS(200);
 
-  //Запуск сигналов синхронизации для SCPC
-  SCPC_SYNC_SIGNAL_START;
+	if(PulseCount < DataTable[REG_PULSE_COUNT])
+	{
+		//Запуск сигналов синхронизации для SCPC
+		SCPC_SYNC_SIGNAL_START;
 
-  //Задержка запуска формирования импульса для выхода
-  Delay_mS(DELAY_PULSE_START);
+		//Задержка запуска формирования импульса для выхода
+		Delay_mS(DELAY_PULSE_START);
 
-  //Запуск сигналов синхронизации для осциллографа
-  OSC_SYNC_SIGNAL_START;
-  //
-  UI_Dut_MeasureStart();
-  //
-  Delay_mS(5);
-  OSC_SYNC_SIGNAL_STOP;
-  Delay_mS(1);
-  OSC_SYNC_SIGNAL_START;
-  Delay_mS(4);
+		//Запуск сигналов синхронизации для осциллографа
+		OSC_SYNC_SIGNAL_START;
+		//
+		UI_Dut_MeasureStart();
+		//
+		Delay_mS(5);
+		OSC_SYNC_SIGNAL_STOP;
+		Delay_mS(1);
+		OSC_SYNC_SIGNAL_START;
+		Delay_mS(4);
 
-  //
-  SCPC_SYNC_SIGNAL_STOP;
+		//
+		SCPC_SYNC_SIGNAL_STOP;
+		PulseCount++;
+	}
+	else
+		PulseCount = 0;
+
   DUT_CLOSE;
   //
 

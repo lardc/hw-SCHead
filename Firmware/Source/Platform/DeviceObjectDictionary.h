@@ -80,7 +80,10 @@
 //
 #define REG_SCPC_EMULATION						78								//(1 - SCPC в режиме эмуляции, 0 - эмуляция SCPC выключена)
 
-#define REG_PULSE_DURATION					80								//Задаваемая длительность импульса для SCPC (в мкс)
+#define REG_PULSE_DURATION						80								//Задаваемая длительность импульса для SCPC (в мкс)
+#define REG_PULSE_COUNT							81								//Количество импульсов
+#define REG_SCPC_NID_SECOND_GROUP				82								//Регистр NID откалиброванного блока SCPC из второй группы по созданию импульса
+#define REG_SCPC_NID_THIRD_GROUP				83								//Регистр NID откалиброванного блока SCPC из третьей группы по созданию импульса
 //
 #define REG_DUT_U                               96                              //Измеренное значение прямого напряжения, мВ
 #define REG_DUT_I_L                             97                              //Измеренное значение ударного тока, А (младшая часть)
