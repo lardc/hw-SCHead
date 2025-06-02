@@ -746,10 +746,14 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
   static float SC_Temp=0;
   static long int CurrentSet=0;
   float SC_K_Set,SC_B_Set;
+  Int16U PulseCount = DataTable[REG_PULSE_COUNT];
+  Int32U CurrentSetTemp = 0;
+  Int16U CalibratedNID;
 
   //Распределяем значение ударного тока по блокам SCPC
   CurrentSet = (DataTable[REG_SC_VALUE_H]<<16);
   CurrentSet |= DataTable[REG_SC_VALUE_L];
+  CurrentSetTemp = CurrentSet; // Сохраняем значение для цикла, если импульсов >1
 
   //Вводим поправки к заданию тока, если значение ударного тока <= UTM_I_MAX
   SC_K_Set = 1;
@@ -807,57 +811,75 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
   else
 	Nid_Count=0;
 
+  while(PulseCount > 0)
+	{
+		while(CurrentSet > 0)
+		{
+			DEVPROFILE_ProcessRequests();
 
-  while(CurrentSet>0)
-  {
-    DEVPROFILE_ProcessRequests();
+			if(CurrentSet > SCPC_SC_SINE_MAX)
+			{
+				SCPC_Read_Data(Interface, SCPC_Data[Nid_Count].Nid, true);
 
-    if(CurrentSet>SCPC_SC_SINE_MAX)
-    {
-      SCPC_Read_Data(Interface, SCPC_Data[Nid_Count].Nid, true);
+				if(SCPC_Data[Nid_Count].DevState == SCPC_Ready)
+				{
+					SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_WAVEFORM_TYPE,
+							DataTable[REG_WAVEFORM_TYPE]);
+					SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_SC_PULSE_VALUE, SCPC_SC_SINE_MAX);
+					SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_PULSE_COUNT, PulseCount);
+					SCPC_Command(Interface, SCPC_Data[Nid_Count].Nid, ACT_SCPC_SC_PULSE_CONFIG);
 
-      if(SCPC_Data[Nid_Count].DevState == SCPC_Ready)
-      {
-        SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_WAVEFORM_TYPE, DataTable[REG_WAVEFORM_TYPE]);
-        SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_SC_PULSE_VALUE, SCPC_SC_SINE_MAX);
-		SCPC_Command(Interface, SCPC_Data[Nid_Count].Nid, ACT_SCPC_SC_PULSE_CONFIG);
+					//Ждем паузу, пока блок выполняет процесс согласно заданной команде
+					//Delay_mS(10);
+				}
 
-        //Ждем паузу, пока блок выполняет процесс согласно заданной команде
-        //Delay_mS(10);
-      }
+				if(SCPC_Data[Nid_Count].DevState == SCPC_PulseConfigReady)
+				{
+					CurrentSet -= SCPC_SC_SINE_MAX;
+					Nid_Count++;
+				}
+			}
+			else //Остаток знаения ударного тока присваеваем откалиброванному блоку
+			{
+				if(PulseCount == 1)
+					CalibratedNID = 0;
+				else if(PulseCount == 2)
+					CalibratedNID = DataTable[REG_SCPC_NID_SECOND_GROUP];
+				else
+					CalibratedNID = DataTable[REG_SCPC_NID_THIRD_GROUP];
 
-      if(SCPC_Data[Nid_Count].DevState == SCPC_PulseConfigReady)
-      {
-        CurrentSet -= SCPC_SC_SINE_MAX;
-        Nid_Count++;
-      }
-    }
-    else //Остаток знаения ударного тока присваеваем 0-му блоку
-    {
-      SCPC_Read_Data(Interface, SCPC_Data[0].Nid, true);
+				SCPC_Read_Data(Interface, SCPC_Data[CalibratedNID].Nid, true);
 
-       if(SCPC_Data[0].DevState == SCPC_Ready)
-       {
-          SC_Temp = SC_K_Set*CurrentSet + ((Int16S)SC_B_Set);//Калибровка погрешности задания тока
-          if(SC_Temp<0)
-          {
-            SC_Temp=1;
-          }
+				if(SCPC_Data[CalibratedNID].DevState == SCPC_Ready)
+				{
+					SC_Temp = SC_K_Set * CurrentSet + ((Int16S)SC_B_Set); //Калибровка погрешности задания тока
+					if(SC_Temp < 0)
+					{
+						SC_Temp = 1;
+					}
 
-          SCPC_WriteData(Interface, SCPC_Data[0].Nid, REG_SCPC_WAVEFORM_TYPE, DataTable[REG_WAVEFORM_TYPE]);
-          SCPC_WriteData(Interface, SCPC_Data[0].Nid, REG_SCPC_SC_PULSE_VALUE, (uint16_t)SC_Temp);
-		  SCPC_Command(Interface, SCPC_Data[0].Nid, ACT_SCPC_SC_PULSE_CONFIG);
+					SCPC_WriteData(Interface, SCPC_Data[CalibratedNID].Nid, REG_SCPC_WAVEFORM_TYPE, DataTable[REG_WAVEFORM_TYPE]);
+					SCPC_WriteData(Interface, SCPC_Data[CalibratedNID].Nid, REG_SCPC_SC_PULSE_VALUE, (uint16_t)SC_Temp);
+					SCPC_WriteData(Interface, SCPC_Data[CalibratedNID].Nid, REG_SCPC_PULSE_COUNT, PulseCount);
+					SCPC_Command(Interface, SCPC_Data[CalibratedNID].Nid, ACT_SCPC_SC_PULSE_CONFIG);
 
-          //Ждем паузу, пока блок выполняет процесс согласно заданной команде
-          //Delay_mS(10);
-       }
+					//Ждем паузу, пока блок выполняет процесс согласно заданной команде
+					//Delay_mS(10);
+				}
 
-	   //SCPC_Read_Data(Interface, SCPC_Data[0].Nid, true);
+				//SCPC_Read_Data(Interface, SCPC_Data[CalibratedNID].Nid, true);
 
-       if(SCPC_Data[0].DevState == SCPC_PulseConfigReady){ CurrentSet=0;}
-    }
-    IWDG_Control();
-  }
+				if(SCPC_Data[CalibratedNID].DevState == SCPC_PulseConfigReady)
+				{
+					CurrentSet = 0;
+				}
+			}
+			IWDG_Control();
+		}
+
+		PulseCount--;
+		CurrentSet = CurrentSetTemp;
+	}
 
   SetDeviceState(DS_PulseConfigReady);
 }
