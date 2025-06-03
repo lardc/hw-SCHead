@@ -36,31 +36,31 @@ static Boolean CONTROL_DispatchAction(Int16U ActionID, pInt16U pUserError);
 //------------------------------------------------------------------------------
 void CONTROL_Init()
 {
-  // Переменные для конфигурации EndPoint
-  Int16U EPIndexes[EP_COUNT] = {EP16_Data_U, EP16_Data_I};
-  Int16U EPSized[EP_COUNT] = {VALUES_x_SIZE, VALUES_x_SIZE};
-  pInt16U EPCounters[EP_COUNT] = {(pInt16U)&CONTROL_Values_U_Counter, (pInt16U)&CONTROL_Values_I_Counter};
-  pInt16U EPDatas[EP_COUNT] = {CONTROL_Values_U, CONTROL_Values_I};
+	// Переменные для конфигурации EndPoint
+	Int16U EPIndexes[EP_COUNT] = {EP16_Data_U, EP16_Data_I};
+	Int16U EPSized[EP_COUNT] = {VALUES_x_SIZE, VALUES_x_SIZE};
+	pInt16U EPCounters[EP_COUNT] = {(pInt16U)&CONTROL_Values_U_Counter, (pInt16U)&CONTROL_Values_I_Counter};
+	pInt16U EPDatas[EP_COUNT] = {CONTROL_Values_U, CONTROL_Values_I};
 
-  // Конфигурация сервиса работы Data-table и EPROM
-  EPROMServiceConfig EPROMService = {(FUNC_EPROM_WriteValues)&NFLASH_WriteDT, (FUNC_EPROM_ReadValues)&NFLASH_ReadDT};
+	// Конфигурация сервиса работы Data-table и EPROM
+	EPROMServiceConfig EPROMService = {(FUNC_EPROM_WriteValues)&NFLASH_WriteDT, (FUNC_EPROM_ReadValues)&NFLASH_ReadDT};
 
-  // Инициализация data table
-  DT_Init(EPROMService, FALSE);
-  DT_SaveFirmwareInfo(CAN_SLAVE_NID, CAN_MASTER_NID);
+	// Инициализация data table
+	DT_Init(EPROMService, FALSE);
+	DT_SaveFirmwareInfo(CAN_SLAVE_NID, CAN_MASTER_NID);
 
-  // Сброс значений
-  DEVPROFILE_ResetControlSection();
+	// Сброс значений
+	DEVPROFILE_ResetControlSection();
 
-  // Инициализация device profile
-  DEVPROFILE_Init(&CONTROL_DispatchAction, &CycleActive);
-  DEVPROFILE_InitEPService(EPIndexes, EPSized, EPCounters, EPDatas);
-  // Сброс значений
-  DEVPROFILE_ResetControlSection();
+	// Инициализация device profile
+	DEVPROFILE_Init(&CONTROL_DispatchAction, &CycleActive);
+	DEVPROFILE_InitEPService(EPIndexes, EPSized, EPCounters, EPDatas);
+	// Сброс значений
+	DEVPROFILE_ResetControlSection();
 
-  //Определение nid блоков, которые подключены
-  SCPCFind(&MASTER_DEVICE_CAN_Interface);
-  IWDG_Control();
+	//Определение nid блоков, которые подключены
+	SCPCFind(&MASTER_DEVICE_CAN_Interface);
+	IWDG_Control();
 }
 // -----------------------------------------------------------------------------
 
@@ -471,11 +471,11 @@ void CONTROL_Idle()
 //------------------------------------------------------------------------------
 void SCTU_Config(pBCCIM_Interface Interface)
 {
-  uint16_t Nid_Count;
+	uint16_t Nid_Count;
 
-  //Проверяем заряжены ли все блоки
-  Nid_Count=0;
-	while(Nid_Count<DataTable[REG_TOTAL_SCPC])
+	//Проверяем заряжены ли все блоки
+	Nid_Count = 0;
+	while(Nid_Count < DataTable[REG_TOTAL_SCPC])
 	{
 		SCPC_Read_Data(&MASTER_DEVICE_CAN_Interface, SCPC_Data[Nid_Count].Nid, true);
 		if(SCPC_CheckStatus(Nid_Count, SCPC_Ready))
@@ -483,109 +483,90 @@ void SCTU_Config(pBCCIM_Interface Interface)
 		else
 		{
 			//Блок SCPC не отвечает, сохраняем Fault
-			SCPC_SaveData(Nid_Count, REG_SCPC_FAULT_REASON, ERR_SCPC_NOT_CHARGED);//SCPC не отвечает
+			SCPC_SaveData(Nid_Count, REG_SCPC_FAULT_REASON, ERR_SCPC_NOT_CHARGED);	//SCPC не отвечает
 			SetDeviceState(DS_Fault);
 			SetDeviceFault(ERR_SCPC_NOT_CHARGED);
 		}
 
-
-		  DEVPROFILE_ProcessRequests();
-		  IWDG_Control();
+		DEVPROFILE_ProcessRequests();
+		IWDG_Control();
 	}
-  //
+	//
 
-  //Преверяем правильно ли задан тип формы ударного тока
-  if((DataTable[REG_WAVEFORM_TYPE]!=WAVEFORM_SINE)&&(DataTable[REG_WAVEFORM_TYPE]!=WAVEFORM_TRAPEZE))
-  {
-    SetDeviceState(DS_Fault);
-    DataTable[REG_FAULT_REASON]=ERR_WAVEFORM_TYPE;
-    return;
-  }
-  //
+	//Преверяем правильно ли задан тип формы ударного тока
+	if((DataTable[REG_WAVEFORM_TYPE] != WAVEFORM_SINE) && (DataTable[REG_WAVEFORM_TYPE] != WAVEFORM_TRAPEZE))
+	{
+		SetDeviceState(DS_Fault);
+		DataTable[REG_FAULT_REASON] = ERR_WAVEFORM_TYPE;
+		return;
+	}
+	//
 
-  //Всем блокам присваиваем значение ударного тока равным нулю и устанавливаем время пульсации
-  Nid_Count=0;
-  while(Nid_Count<DataTable[REG_TOTAL_SCPC])
-  {
-    SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_SC_PULSE_VALUE, 0);
-    SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_PULSE_DURATION, DataTable[REG_PULSE_DURATION]);
-    SCPC_Read_Data(Interface, SCPC_Data[Nid_Count].Nid, true);
-    if(SCPC_Data[Nid_Count].SC_PulseValue==0)
-    {
-      Nid_Count++;
-    }
-    IWDG_Control();
+	//Всем блокам присваиваем значение ударного тока равным нулю и устанавливаем время пульсации
+	Nid_Count = 0;
+	while(Nid_Count < DataTable[REG_TOTAL_SCPC])
+	{
+		SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_SC_PULSE_VALUE, 0);
+		SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_PULSE_DURATION, DataTable[REG_PULSE_DURATION]);
+		SCPC_Read_Data(Interface, SCPC_Data[Nid_Count].Nid, true);
+		if(SCPC_Data[Nid_Count].SC_PulseValue == 0)
+		{
+			Nid_Count++;
+		}
+		IWDG_Control();
 
-	DEVPROFILE_ProcessRequests();
-  }
-  //
+		DEVPROFILE_ProcessRequests();
+	}
+	//
 
-  //Выбираем нужный канал измерения
-  MeasureChannelSet(DataTable[REG_CHANNEL],false);
-  //
+	//Выбираем нужный канал измерения
+	MeasureChannelSet(DataTable[REG_CHANNEL], false);
+	//
 
-  //----------Конфигурация SCHuntAmplifier-------------
+	//----------Конфигурация SCHuntAmplifier-------------
 
-  //Вычисление коэффициента усиления
-  uint32_t CurrentSet = (DataTable[REG_SC_VALUE_H]<<16);
-  CurrentSet |= DataTable[REG_SC_VALUE_L];
+	//Вычисление коэффициента усиления
+	uint32_t CurrentSet = (DataTable[REG_SC_VALUE_H] << 16);
+	CurrentSet |= DataTable[REG_SC_VALUE_L];
 
-  float Ushunt_mV = ((float)DataTable[REG_R_SHUNT])/1000*CurrentSet;
-  float Ky = ((float)ADC_REF_MV)/Ushunt_mV;
+	float Ushunt_mV = ((float)DataTable[REG_R_SHUNT]) / 1000 * CurrentSet;
+	float Ky = ((float)ADC_REF_MV) / Ushunt_mV;
 
-  if(DataTable[REG_CHANNEL]==CHANNEL_1)
-  {
-    Set_K_ShuntAmplifier1(Ky);
-  }
+	if(DataTable[REG_CHANNEL] == CHANNEL_1)
+	{
+		Set_K_ShuntAmplifier1(Ky);
+	}
 
-  if(DataTable[REG_CHANNEL]==CHANNEL_2)
-  {
-    Set_K_ShuntAmplifier2(Ky);
-  }
-  //---------------------------------------------------
+	if(DataTable[REG_CHANNEL] == CHANNEL_2)
+	{
+		Set_K_ShuntAmplifier2(Ky);
+	}
+	//---------------------------------------------------
 
-  //Конфигурируем под формирование синуса
-  if(DataTable[REG_WAVEFORM_TYPE]==WAVEFORM_SINE)
-  {
-    SCTU_PulseSineConfig(Interface);
-  }
-  //
+	//Конфигурируем под формирование синуса
+	if(DataTable[REG_WAVEFORM_TYPE] == WAVEFORM_SINE)
+	{
+		SCTU_PulseSineConfig(Interface);
+	}
+	//
 
-  //Конфигурируем под формирование трапеции
-  if(DataTable[REG_WAVEFORM_TYPE]==WAVEFORM_TRAPEZE)
-  {
-    SCTU_PulseTrapezeConfig(Interface);
-  }
-  //
+	//Конфигурируем под формирование трапеции
+	if(DataTable[REG_WAVEFORM_TYPE] == WAVEFORM_TRAPEZE)
+	{
+		SCTU_PulseTrapezeConfig(Interface);
+	}
+	//
 }
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
 void MeasureChannelSet(uint16_t ChannelNumber, bool ChannelInverse)
 {
-  if(DataTable[REG_CHANNEL]==CHANNEL_1)
-  {
-    if(ChannelInverse)
-    {
-      CH_2_SET;
-    }
-    else
-    {
-      CH_1_SET;
-    }
-  }
+	if(DataTable[REG_CHANNEL] == CHANNEL_1)
+		ChannelInverse ? CH_2_SET : CH_1_SET;
 
-  if(DataTable[REG_CHANNEL]==CHANNEL_2)
-  {
-    if(ChannelInverse)
-    {
-      CH_1_SET;
-    }
-    else
-    {
-      CH_2_SET;
-    }
-  }
+	if(DataTable[REG_CHANNEL] == CHANNEL_2)
+		ChannelInverse ? CH_1_SET : CH_2_SET;
 }
 //------------------------------------------------------------------------------
 
@@ -897,26 +878,26 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 //------------------------------------------------------------------------------
 void SurgeCurrentProcess(pBCCIM_Interface Interface)
 {
-  uint16_t Nid_Count=0;
-  Int16U PulseCount = 0;
+	uint16_t Nid_Count = 0;
+	Int16U PulseCount = 0;
 
-  if(DataTable[REG_DUT_TYPE]==THYRISTOR)
-  {
-    //Открытие тиристора
-    DUT_OPEN;
-    Delay_mS(5);
+	if(DataTable[REG_DUT_TYPE] == THYRISTOR)
+	{
+		//Открытие тиристора
+		DUT_OPEN;
+		Delay_mS(5);
 
-    //Проверка на окрытие тиристора
-    if(CURRENT_DUT_CONTROL)
-    {
-       DUT_CLOSE;
-       SetDeviceState(DS_Fault);
-       SetDeviceFault(ERR_DUT_IS_NOT_OPEN);
-       return;
-    }
-  }
+		//Проверка на окрытие тиристора
+		if(CURRENT_DUT_CONTROL)
+		{
+			DUT_CLOSE;
+			SetDeviceState(DS_Fault);
+			SetDeviceFault(ERR_DUT_IS_NOT_OPEN);
+			return;
+		}
+	}
 
-  Delay_mS(200);
+	Delay_mS(200);
 
 	if(PulseCount < DataTable[REG_PULSE_COUNT])
 	{
@@ -943,49 +924,49 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 
 		PulseCount = 0;
 
-  DUT_CLOSE;
-  //
+		DUT_CLOSE;
+	//
 
-  Delay_mS(200);
+	Delay_mS(200);
 
-  //Считываем статусы блоков SCPC
-  Nid_Count=0;
-  while(Nid_Count<DataTable[REG_TOTAL_SCPC])
-  {
-    SCPC_Read_Data(Interface, SCPC_Data[Nid_Count].Nid, true);
-    Nid_Count++;
-    IWDG_Control();
-  }
-  //
+	//Считываем статусы блоков SCPC
+	Nid_Count = 0;
+	while(Nid_Count < DataTable[REG_TOTAL_SCPC])
+	{
+		SCPC_Read_Data(Interface, SCPC_Data[Nid_Count].Nid, true);
+		Nid_Count++;
+		IWDG_Control();
+	}
+	//
 
-  //Проверяем все ли блоки SCPC сформировали заданный импульс тока
-  Nid_Count=0;
-  while(Nid_Count<DataTable[REG_TOTAL_SCPC])
-  {
-    if(SCPC_Data[Nid_Count].SC_PulseValue)
-    {
-      if((SCPC_Data[Nid_Count].DevState!=SCPC_PulseEnd)&&(SCPC_Data[Nid_Count].DevState!=SCPC_WaitTimeOut))
-      {
-        //Один из блоков SCPC не сформировал импульс тока, сохраняем Fault
-        SCPC_SaveData(SCPC_Data[Nid_Count].Nid, REG_SCPC_FAULT_REASON, ERR_SCPC_PULSE);
-        SetDeviceState(DS_Fault);
-        SetDeviceFault(ERR_SCPC_PULSE);
-      }
-    }
-    Nid_Count++;
-    IWDG_Control();
-  }
-  //
+	//Проверяем все ли блоки SCPC сформировали заданный импульс тока
+	Nid_Count = 0;
+	while(Nid_Count < DataTable[REG_TOTAL_SCPC])
+	{
+		if(SCPC_Data[Nid_Count].SC_PulseValue)
+		{
+			if((SCPC_Data[Nid_Count].DevState != SCPC_PulseEnd) && (SCPC_Data[Nid_Count].DevState != SCPC_WaitTimeOut))
+			{
+				//Один из блоков SCPC не сформировал импульс тока, сохраняем Fault
+				SCPC_SaveData(SCPC_Data[Nid_Count].Nid, REG_SCPC_FAULT_REASON, ERR_SCPC_PULSE);
+				SetDeviceState(DS_Fault);
+				SetDeviceFault(ERR_SCPC_PULSE);
+			}
+		}
+		Nid_Count++;
+		IWDG_Control();
+	}
+	//
 
-  //Utm measure
-  Utm_Measure();
-  //
+	//Utm measure
+	Utm_Measure();
+	//
 
-  //
-  if(DataTable[REG_DEV_STATE]!=DS_Fault)
-  {
-    SetDeviceState(DS_PulseEnd);
-  }
+	//
+	if(DataTable[REG_DEV_STATE] != DS_Fault)
+	{
+		SetDeviceState(DS_PulseEnd);
+	}
 }
 //------------------------------------------------------------------------------
 

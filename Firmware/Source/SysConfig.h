@@ -43,8 +43,8 @@
 #define OSC_SYNC_SIGNAL_STOP                    GPIO_Bit_Set(GPIOB, Pin_15);
 #define DUT_OPEN                                GPIO_Bit_Rst(GPIOB, Pin_13);
 #define DUT_CLOSE                               GPIO_Bit_Set(GPIOB, Pin_13);
-#define CH_1_SET                                GPIO_Bit_Rst(GPIOA, Pin_15);
-#define CH_2_SET                                GPIO_Bit_Set(GPIOA, Pin_15);
+#define CH_1_SET                                GPIO_Bit_Rst(GPIOA, Pin_15)
+#define CH_2_SET                                GPIO_Bit_Set(GPIOA, Pin_15)
 #define SPI1_CS_1                               GPIO_Bit_Set(GPIOA, Pin_4);
 #define SPI1_CS_0                               GPIO_Bit_Rst(GPIOA, Pin_4);
 //-----------------------
