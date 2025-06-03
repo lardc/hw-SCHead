@@ -17,7 +17,6 @@
 #include "ZwNFlash.h"
 #include "ZwADC.h"
 
-
 // Переменные
 //
 //
@@ -422,15 +421,51 @@ void CONTROL_Idle()
   //Меняем в ячейке макисмальный ток SCTU, при смене формы импульса
   if(DataTable[REG_WAVEFORM_TYPE]==WAVEFORM_SINE)
   {
-    uint32_t SC_Max_Temp = SCPC_SC_SINE_MAX*DataTable[REG_TOTAL_SCPC];
-    DataTable[REG_SC_MAX_L] = (uint16_t)SC_Max_Temp;
-    DataTable[REG_SC_MAX_H] = (uint16_t)(SC_Max_Temp>>16);
+	uint32_t SC_Max_Temp = 0;
+	switch(DataTable[REG_PULSE_COUNT])
+	{
+		case SINGULAR_PULSE:
+		{
+		    SC_Max_Temp = SCPC_SC_SINE_MAX*DataTable[REG_TOTAL_SCPC];
+		    DataTable[REG_SC_MAX_L] = (uint16_t)SC_Max_Temp;
+		    DataTable[REG_SC_MAX_H] = (uint16_t)(SC_Max_Temp>>16);
 
-    if(SC_Max_Temp>SCTU_SC_SINE_MAX)
-    {
-      DataTable[REG_SC_MAX_L] = (uint16_t)SCTU_SC_SINE_MAX;
-      DataTable[REG_SC_MAX_H] = (uint16_t)(SCTU_SC_SINE_MAX>>16);
-    }
+		    if(SC_Max_Temp>SCTU_SC_SINE_SINGULAR_MAX)
+		    {
+		      DataTable[REG_SC_MAX_L] = (uint16_t)SCTU_SC_SINE_SINGULAR_MAX;
+		      DataTable[REG_SC_MAX_H] = (uint16_t)(SCTU_SC_SINE_SINGULAR_MAX>>16);
+		    }
+		    break;
+		}
+
+		case DOUBLE_PULSE:
+		{
+		    SC_Max_Temp = SCPC_SC_SINE_MAX*DataTable[REG_TOTAL_SCPC]/2;
+		    DataTable[REG_SC_MAX_L] = (uint16_t)SC_Max_Temp;
+		    DataTable[REG_SC_MAX_H] = (uint16_t)(SC_Max_Temp>>16);
+
+		    if(SC_Max_Temp>SCTU_SC_SINE_DOUBLE_MAX)
+		    {
+		      DataTable[REG_SC_MAX_L] = (uint16_t)SCTU_SC_SINE_DOUBLE_MAX;
+		      DataTable[REG_SC_MAX_H] = (uint16_t)(SCTU_SC_SINE_DOUBLE_MAX>>16);
+		    }
+		    break;
+		}
+
+		case TRIPLE_PULSE:
+		{
+			SC_Max_Temp = SCPC_SC_SINE_MAX * DataTable[REG_TOTAL_SCPC] / 3;
+			DataTable[REG_SC_MAX_L] = (uint16_t)SC_Max_Temp;
+			DataTable[REG_SC_MAX_H] = (uint16_t)(SC_Max_Temp >> 16);
+
+			if(SC_Max_Temp > SCTU_SC_SINE_TRIPLE_MAX)
+			{
+				DataTable[REG_SC_MAX_L] = (uint16_t)SCTU_SC_SINE_TRIPLE_MAX;
+				DataTable[REG_SC_MAX_H] = (uint16_t)(SCTU_SC_SINE_TRIPLE_MAX >> 16);
+			}
+			break;
+		}
+	}
   }
 
   if(DataTable[REG_WAVEFORM_TYPE]==WAVEFORM_TRAPEZE)
@@ -813,9 +848,36 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 
   while(PulseCount > 0)
 	{
+		switch(PulseCount)
+		{
+			case 1:
+				{
+					CalibratedNID = 0;
+					break;
+				}
+			case 2:
+				{
+					CalibratedNID = DataTable[REG_SCPC_NID_SECOND_GROUP];
+					break;
+				}
+			case 3:
+				{
+					CalibratedNID = DataTable[REG_SCPC_NID_THIRD_GROUP];
+					break;
+				}
+			default:
+				{
+					CalibratedNID = 0;
+					break;
+				}
+		}
+
 		while(CurrentSet > 0)
 		{
 			DEVPROFILE_ProcessRequests();
+
+			if(Nid_Count == CalibratedNID)
+				Nid_Count++;
 
 			if(CurrentSet > SCPC_SC_SINE_MAX)
 			{
@@ -841,12 +903,6 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 			}
 			else //Остаток знаения ударного тока присваеваем откалиброванному блоку
 			{
-				if(PulseCount == 1)
-					CalibratedNID = 0;
-				else if(PulseCount == 2)
-					CalibratedNID = DataTable[REG_SCPC_NID_SECOND_GROUP];
-				else
-					CalibratedNID = DataTable[REG_SCPC_NID_THIRD_GROUP];
 
 				SCPC_Read_Data(Interface, SCPC_Data[CalibratedNID].Nid, true);
 
@@ -916,7 +972,11 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 
 		//Задержка запуска формирования импульса для выхода
 		Delay_mS(DELAY_PULSE_START);
-
+		//
+		SCPC_SYNC_SIGNAL_STOP;
+		PulseCount++;
+	}
+	else
 		//Запуск сигналов синхронизации для осциллографа
 		OSC_SYNC_SIGNAL_START;
 		//
@@ -928,11 +988,6 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 		OSC_SYNC_SIGNAL_START;
 		Delay_mS(4);
 
-		//
-		SCPC_SYNC_SIGNAL_STOP;
-		PulseCount++;
-	}
-	else
 		PulseCount = 0;
 
   DUT_CLOSE;

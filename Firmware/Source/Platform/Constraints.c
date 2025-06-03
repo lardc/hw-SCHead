@@ -31,16 +31,16 @@ const TableItemConstraint NVConstraint[DATA_TABLE_NV_SIZE] =
   {0, INT16U_MAX, B5_I_CAL_DEFAULT},											// 19
   {0, SCTU_NUM_MAX, SCTU_NUM_MAX},												// 20
   {0, INT16U_MAX, ADR_SCPC0},													// 21
-  {0, INT16U_MAX, K1_I_CAL_DEFAULT},																	// 22
-  {0, INT16U_MAX, B1_I_CAL_DEFAULT},																	// 23
-  {0, INT16U_MAX, K2_I_CAL_DEFAULT},																	// 24
-  {0, INT16U_MAX, B2_I_CAL_DEFAULT},																	// 25
-  {0, INT16U_MAX, K3_I_CAL_DEFAULT},																	// 26
-  {0, INT16U_MAX, B3_I_CAL_DEFAULT},																	// 27
-  {0, INT16U_MAX, K4_I_CAL_DEFAULT},																	// 28
-  {0, INT16U_MAX, B4_I_CAL_DEFAULT},																	// 29
-  {0, INT16U_MAX, K5_I_CAL_DEFAULT},																	// 30
-  {0, INT16U_MAX, B5_I_CAL_DEFAULT},																	// 31
+  {0, INT16U_MAX, K1_I_CAL_DEFAULT},											// 22
+  {0, INT16U_MAX, B1_I_CAL_DEFAULT},											// 23
+  {0, INT16U_MAX, K2_I_CAL_DEFAULT},											// 24
+  {0, INT16U_MAX, B2_I_CAL_DEFAULT},											// 25
+  {0, INT16U_MAX, K3_I_CAL_DEFAULT},											// 26
+  {0, INT16U_MAX, B3_I_CAL_DEFAULT},											// 27
+  {0, INT16U_MAX, K4_I_CAL_DEFAULT},											// 28
+  {0, INT16U_MAX, B4_I_CAL_DEFAULT},											// 29
+  {0, INT16U_MAX, K5_I_CAL_DEFAULT},											// 30
+  {0, INT16U_MAX, B5_I_CAL_DEFAULT},											// 31
   {0, 0, 0},																	// 32
   {0, 0, 0},																	// 33
   {0, 0, 0},																	// 34
@@ -49,8 +49,8 @@ const TableItemConstraint NVConstraint[DATA_TABLE_NV_SIZE] =
   {0, 0, 0},																	// 37
   {0, 0, 0},																	// 38
   {0, 0, 0},																	// 39
-  {0, 0, 0},																	// 40
-  {0, 0, 0},																	// 41
+  {0, INT16U_MAX, 0},															// 40
+  {0, INT16U_MAX, 0},															// 41
   {0, 0, 0},																	// 42
   {0, 0, 0},																	// 43
   {0, 0, 0},																	// 44
@@ -95,8 +95,8 @@ const TableItemConstraint VConstraint[DATA_TABLE_WP_START - DATA_TABLE_WR_START]
   {0, 0, 0},																	// 79
   {PULSE_DURATION_MIN, PULSE_DURATION_MAX, PULSE_DURATION_DEF},		   		    // 80
   {PULSE_COUNT_MIN, PULSE_COUNT_MAX, PULSE_COUNT_MIN},							// 81
-  {0, INT16U_MAX, 0},															// 82
-  {0, INT16U_MAX, 0},															// 83
+  {0, 0, 0},																	// 82
+  {0, 0, 0},																	// 83
   {0, 0, 0},																	// 84
   {0, 0, 0},																	// 85
   {0, 0, 0},																	// 86
