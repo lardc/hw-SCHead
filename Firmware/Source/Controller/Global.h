@@ -41,9 +41,7 @@
 //
 #define UTM_I_MAX                               15500                           //Максимальное значение тока при котором вводится поправка к заданию
 #define SCTU_SC_VALUE_MIN                       100                             //Минимальное значение ударного тока SCTU, A
-#define SCTU_SC_SINE_SINGULAR_MAX               120000                          //Максимальное значение ударного тока установки SCTU при полусинусоидальной форме импульса, при количестве импульсов = 1, A
-#define SCTU_SC_SINE_DOUBLE_MAX					60000							//При количестве импульсов = 2, A
-#define SCTU_SC_SINE_TRIPLE_MAX					40000							//При количестве импульсов = 3, A
+#define SCTU_SC_SINE_MAX  		                120000                          //Максимальное значение ударного тока установки SCTU при полусинусоидальной форме импульса, A
 #define SCTU_SC_TRAPEZE_MAX                     16000                           //Максимальное значение ударного тока установки SCTU при трапецеидальной форме импульса, A
 #define TRAPEZE_EDGE_TIME_MIN                   100                             //Минимальное фремя фронта трапеции, мкС
 #define TRAPEZE_EDGE_TIME_MAX                   1000                            //Максимальное фремя фронта трапеции, мкС
@@ -65,9 +63,6 @@
 #define ADC_SC_LENGTH               (EXTREMUM_STOP_POINT-EXTREMUM_START_POINT)                           //Размер буфера для подсчета одинаковых сэмплов АЦП
 #define ADC_I_SAMPLE_THRESHOLD                  5                               //Порог количества сэмплов с одинаоковой амплитудой для определения амплитуды тока
 #define AVERAGE_POINTS                          100                             //Количество точек усреднения
-#define SINGULAR_PULSE							1								//Количество пульсаций синусоидного сигнала
-#define DOUBLE_PULSE							2								//
-#define TRIPLE_PULSE							3								//
 //
 
 

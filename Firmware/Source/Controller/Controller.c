@@ -368,139 +368,103 @@ static Boolean CONTROL_DispatchAction(Int16U ActionID, pInt16U pUserError)
 
 void CONTROL_Idle()
 {
-  //Зупуск заряда конденсаторов в блоках SCPC
-  if(DataTable[REG_DEV_STATE]==DS_BatteryChargeStart)
-  {
-    SCPC_CapChargeStart(&MASTER_DEVICE_CAN_Interface);
-  }
-  //
+	//Зупуск заряда конденсаторов в блоках SCPC
+	if(DataTable[REG_DEV_STATE] == DS_BatteryChargeStart)
+	{
+		SCPC_CapChargeStart(&MASTER_DEVICE_CAN_Interface);
+	}
+	//
 
-  //Если состояние конфигурации блоков, то конфигурируем их
-  if(DataTable[REG_DEV_STATE]==DS_PulseConfig)
-  {
-    SCTU_Config(&MASTER_DEVICE_CAN_Interface);
-  }
-  //
+	//Если состояние конфигурации блоков, то конфигурируем их
+	if(DataTable[REG_DEV_STATE] == DS_PulseConfig)
+	{
+		SCTU_Config(&MASTER_DEVICE_CAN_Interface);
+	}
+	//
 
-  //Если состояние установки DS_PulseStart, то формируем импульс тока
-  if(DataTable[REG_DEV_STATE]==DS_PulseStart)
+	//Если состояние установки DS_PulseStart, то формируем импульс тока
+	if(DataTable[REG_DEV_STATE] == DS_PulseStart)
 	{
 		DEVPROFILE_ResetScopes(0);
 		SurgeCurrentProcess(&MASTER_DEVICE_CAN_Interface);
 		DEVPROFILE_ResetEPReadState();
 	}
 
-  //Если установка перешла в состояние DS_PulseEnd, то через время TIME_CHANGE_STATE
-  //установка переходит в состояние DS_BatteryChargeWait
-  if(DataTable[REG_DEV_STATE]==DS_PulseEnd)
-  {
-    Int64U TimeOutCounter=CONTROL_TimeCounter+TIME_CHANGE_STATE;
-    while(CONTROL_TimeCounter<TimeOutCounter)
-    {
-      DEVPROFILE_ProcessRequests();
-      IWDG_Control();
-    }
-    SetDeviceState(DS_WaitTimeOut);
-  }
-  //
-
-  //Ожидание общего таймаута работы установки
-  if(DataTable[REG_DEV_STATE]==DS_WaitTimeOut)
-  {
-    Int64U TimeOutCounter=CONTROL_TimeCounter+WAIT_TIMEOUT_VALUE;
-    while(CONTROL_TimeCounter<TimeOutCounter)
-    {
-      DEVPROFILE_ProcessRequests();
-      IWDG_Control();
-    }
-    SetDeviceState(DS_Ready);
-  }
-  //
-
-
-  //Меняем в ячейке макисмальный ток SCTU, при смене формы импульса
-  if(DataTable[REG_WAVEFORM_TYPE]==WAVEFORM_SINE)
-  {
-	uint32_t SC_Max_Temp = 0;
-	switch(DataTable[REG_PULSE_COUNT])
+	//Если установка перешла в состояние DS_PulseEnd, то через время TIME_CHANGE_STATE
+	//установка переходит в состояние DS_BatteryChargeWait
+	if(DataTable[REG_DEV_STATE] == DS_PulseEnd)
 	{
-		case SINGULAR_PULSE:
+		Int64U TimeOutCounter = CONTROL_TimeCounter + TIME_CHANGE_STATE;
+		while(CONTROL_TimeCounter < TimeOutCounter)
 		{
-		    SC_Max_Temp = SCPC_SC_SINE_MAX*DataTable[REG_TOTAL_SCPC];
-		    DataTable[REG_SC_MAX_L] = (uint16_t)SC_Max_Temp;
-		    DataTable[REG_SC_MAX_H] = (uint16_t)(SC_Max_Temp>>16);
-
-		    if(SC_Max_Temp>SCTU_SC_SINE_SINGULAR_MAX)
-		    {
-		      DataTable[REG_SC_MAX_L] = (uint16_t)SCTU_SC_SINE_SINGULAR_MAX;
-		      DataTable[REG_SC_MAX_H] = (uint16_t)(SCTU_SC_SINE_SINGULAR_MAX>>16);
-		    }
-		    break;
+			DEVPROFILE_ProcessRequests();
+			IWDG_Control();
 		}
+		SetDeviceState(DS_WaitTimeOut);
+	}
+	//
 
-		case DOUBLE_PULSE:
+	//Ожидание общего таймаута работы установки
+	if(DataTable[REG_DEV_STATE] == DS_WaitTimeOut)
+	{
+		Int64U TimeOutCounter = CONTROL_TimeCounter + WAIT_TIMEOUT_VALUE;
+		while(CONTROL_TimeCounter < TimeOutCounter)
 		{
-		    SC_Max_Temp = SCPC_SC_SINE_MAX*DataTable[REG_TOTAL_SCPC]/2;
-		    DataTable[REG_SC_MAX_L] = (uint16_t)SC_Max_Temp;
-		    DataTable[REG_SC_MAX_H] = (uint16_t)(SC_Max_Temp>>16);
-
-		    if(SC_Max_Temp>SCTU_SC_SINE_DOUBLE_MAX)
-		    {
-		      DataTable[REG_SC_MAX_L] = (uint16_t)SCTU_SC_SINE_DOUBLE_MAX;
-		      DataTable[REG_SC_MAX_H] = (uint16_t)(SCTU_SC_SINE_DOUBLE_MAX>>16);
-		    }
-		    break;
+			DEVPROFILE_ProcessRequests();
+			IWDG_Control();
 		}
+		SetDeviceState(DS_Ready);
+	}
+	//
 
-		case TRIPLE_PULSE:
+
+	//Меняем в ячейке макисмальный ток SCTU, при смене формы импульса
+	if(DataTable[REG_WAVEFORM_TYPE] == WAVEFORM_SINE)
+	{
+		uint32_t SC_Max_Temp = SCPC_SC_SINE_MAX * DataTable[REG_TOTAL_SCPC] / DataTable[REG_PULSE_COUNT];
+		uint16_t MaxSineAmplitude = SCTU_SC_SINE_MAX / DataTable[REG_PULSE_COUNT];
+		DataTable[REG_SC_MAX_L] = (uint16_t)SC_Max_Temp;
+		DataTable[REG_SC_MAX_H] = (uint16_t)(SC_Max_Temp >> 16);
+
+		if(SC_Max_Temp > MaxSineAmplitude)
 		{
-			SC_Max_Temp = SCPC_SC_SINE_MAX * DataTable[REG_TOTAL_SCPC] / 3;
-			DataTable[REG_SC_MAX_L] = (uint16_t)SC_Max_Temp;
-			DataTable[REG_SC_MAX_H] = (uint16_t)(SC_Max_Temp >> 16);
-
-			if(SC_Max_Temp > SCTU_SC_SINE_TRIPLE_MAX)
-			{
-				DataTable[REG_SC_MAX_L] = (uint16_t)SCTU_SC_SINE_TRIPLE_MAX;
-				DataTable[REG_SC_MAX_H] = (uint16_t)(SCTU_SC_SINE_TRIPLE_MAX >> 16);
-			}
-			break;
+			DataTable[REG_SC_MAX_L] = MaxSineAmplitude;
+			DataTable[REG_SC_MAX_H] = (MaxSineAmplitude >> 16);
 		}
 	}
-  }
 
-  if(DataTable[REG_WAVEFORM_TYPE]==WAVEFORM_TRAPEZE)
-  {
-    uint32_t SC_Max_Temp = SCPC_SC_TRAPEZE_MAX*SCPC_v20_Count;
-    DataTable[REG_SC_MAX_L] = (uint16_t)SC_Max_Temp;
-    DataTable[REG_SC_MAX_H] = (uint16_t)(SC_Max_Temp>>16);
+	if(DataTable[REG_WAVEFORM_TYPE] == WAVEFORM_TRAPEZE)
+	{
+		uint32_t SC_Max_Temp = SCPC_SC_TRAPEZE_MAX * SCPC_v20_Count;
+		DataTable[REG_SC_MAX_L] = (uint16_t)SC_Max_Temp;
+		DataTable[REG_SC_MAX_H] = (uint16_t)(SC_Max_Temp >> 16);
 
-    if(SC_Max_Temp>SCTU_SC_TRAPEZE_MAX)
-    {
-      DataTable[REG_SC_MAX_L] = (uint16_t)SCTU_SC_TRAPEZE_MAX;
-      DataTable[REG_SC_MAX_H] = (uint16_t)(SCTU_SC_TRAPEZE_MAX>>16);
-    }
-  }
-  //
+		if(SC_Max_Temp > SCTU_SC_TRAPEZE_MAX)
+		{
+			DataTable[REG_SC_MAX_L] = (uint16_t)SCTU_SC_TRAPEZE_MAX;
+			DataTable[REG_SC_MAX_H] = (uint16_t)(SCTU_SC_TRAPEZE_MAX >> 16);
+		}
+	}
+	//
 
-  //Если задан ток больше максимально возможного, то заданное значение уменьшиться до возможного
-  uint32_t CurrentMax = (DataTable[REG_SC_MAX_H]<<16);
-  CurrentMax |= DataTable[REG_SC_MAX_L];
+	//Если задан ток больше максимально возможного, то заданное значение уменьшиться до возможного
+	uint32_t CurrentMax = (DataTable[REG_SC_MAX_H] << 16);
+	CurrentMax |= DataTable[REG_SC_MAX_L];
 
-  uint32_t CurrentSet = (DataTable[REG_SC_VALUE_H]<<16);
-  CurrentSet |= DataTable[REG_SC_VALUE_L];
+	uint32_t CurrentSet = (DataTable[REG_SC_VALUE_H] << 16);
+	CurrentSet |= DataTable[REG_SC_VALUE_L];
 
-  if(CurrentSet>CurrentMax)
-  {
-    DataTable[REG_SC_VALUE_L] = (uint16_t)CurrentMax;
-    DataTable[REG_SC_VALUE_H] = (uint16_t)(CurrentMax>>16);
-    DataTable[REG_WARNING] = WARNING_SC_CUT_OFF;
-  }
-  //
-  
+	if(CurrentSet > CurrentMax)
+	{
+		DataTable[REG_SC_VALUE_L] = (uint16_t)CurrentMax;
+		DataTable[REG_SC_VALUE_H] = (uint16_t)(CurrentMax >> 16);
+		DataTable[REG_WARNING] = WARNING_SC_CUT_OFF;
+	}
+	//
 
-  DEVPROFILE_ProcessRequests();
+	DEVPROFILE_ProcessRequests();
 
-  IWDG_Control();
+	IWDG_Control();
 }
 // -----------------------------------------------------------------------------
 
@@ -777,99 +741,88 @@ void SCTU_PulseTrapezeConfig(pBCCIM_Interface Interface)
 //------------------------------------------------------------------------------
 void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 {
-  static uint16_t Nid_Count=0;
-  static float SC_Temp=0;
-  static long int CurrentSet=0;
-  float SC_K_Set,SC_B_Set;
-  Int16U PulseCount = DataTable[REG_PULSE_COUNT];
-  Int32U CurrentSetTemp = 0;
-  Int16U CalibratedNID;
+	static uint16_t Nid_Count = 0;
+	static float SC_Temp = 0;
+	static long int CurrentSet = 0;
+	float SC_K_Set, SC_B_Set;
+	Int16U PulseCount = DataTable[REG_PULSE_COUNT];
+	Int32U CurrentSetTemp = 0;
+	Int16U CalibratedNID;
 
-  //Распределяем значение ударного тока по блокам SCPC
-  CurrentSet = (DataTable[REG_SC_VALUE_H]<<16);
-  CurrentSet |= DataTable[REG_SC_VALUE_L];
-  CurrentSetTemp = CurrentSet; // Сохраняем значение для цикла, если импульсов >1
+	//Распределяем значение ударного тока по блокам SCPC
+	CurrentSet = (DataTable[REG_SC_VALUE_H] << 16);
+	CurrentSet |= DataTable[REG_SC_VALUE_L];
+	CurrentSetTemp = CurrentSet; // Сохраняем значение для цикла, если импульсов >1
 
-  //Вводим поправки к заданию тока, если значение ударного тока <= UTM_I_MAX
-  SC_K_Set = 1;
-  SC_B_Set = 0;
+	//Вводим поправки к заданию тока, если значение ударного тока <= UTM_I_MAX
+	SC_K_Set = 1;
+	SC_B_Set = 0;
 
-  if(CurrentSet<=UTM_I_MAX)
-  {
-    SC_K_Set = (float)((Int16S)DataTable[REG_K_SC_SET])/1000;
-    SC_B_Set = (Int16S)DataTable[REG_B_SC_SET];
-  }
-  //
+	if(CurrentSet <= UTM_I_MAX)
+	{
+		SC_K_Set = (float)((Int16S)DataTable[REG_K_SC_SET]) / 1000;
+		SC_B_Set = (Int16S)DataTable[REG_B_SC_SET];
+	}
+	//
 
-  //Проверяем не было ли указания сконфигурировать только один блок
-  if(DataTable[REG_NID_SCPC_CONFIG]!=0)
-  {
-    Nid_Count=0;
+	//Проверяем не было ли указания сконфигурировать только один блок
+	if(DataTable[REG_NID_SCPC_CONFIG]!=0)
+	{
+		Nid_Count=0;
 
-    //Проверяем есть ли требуемый блок в списке подключенных
-    while(SCPC_Data[Nid_Count].Nid != DataTable[REG_NID_SCPC_CONFIG])
-    {
-      Nid_Count++;
+		//Проверяем есть ли требуемый блок в списке подключенных
+		while(SCPC_Data[Nid_Count].Nid != DataTable[REG_NID_SCPC_CONFIG])
+		{
+			Nid_Count++;
 
-      if(Nid_Count>=DataTable[REG_SCTU_SCPC_NUM])
-      {
-        DataTable[REG_WARNING] = WARNING_NID_NOT_FOUND;
-        SetDeviceState(DS_Ready);
-        DataTable[REG_NID_SCPC_CONFIG] = 0;
-        return;
-      }
-    }
+			if(Nid_Count >= DataTable[REG_SCTU_SCPC_NUM])
+			{
+				DataTable[REG_WARNING] = WARNING_NID_NOT_FOUND;
+				SetDeviceState(DS_Ready);
+				DataTable[REG_NID_SCPC_CONFIG] = 0;
+				return;
+			}
+		}
 
-    if(CurrentSet>SCPC_SC_SINE_MAX)
-    {
-      CurrentSet = SCPC_SC_SINE_MAX;
-    }
+		if(CurrentSet > SCPC_SC_SINE_MAX)
+		{
+			CurrentSet = SCPC_SC_SINE_MAX;
+		}
 
-    SCPC_Read_Data(Interface, SCPC_Data[Nid_Count].Nid, true);
+		SCPC_Read_Data(Interface, SCPC_Data[Nid_Count].Nid, true);
 
-    if(SCPC_Data[Nid_Count].DevState == SCPC_Ready)
-    {
-      SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_WAVEFORM_TYPE, DataTable[REG_WAVEFORM_TYPE]);
-      SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_SC_PULSE_VALUE, CurrentSet);
-      SCPC_Command(Interface, SCPC_Data[Nid_Count].Nid, ACT_SCPC_SC_PULSE_CONFIG);
-    }
+		if(SCPC_Data[Nid_Count].DevState == SCPC_Ready)
+		{
+			SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_WAVEFORM_TYPE, DataTable[REG_WAVEFORM_TYPE]);
+			SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_SC_PULSE_VALUE, CurrentSet);
+			SCPC_Command(Interface, SCPC_Data[Nid_Count].Nid, ACT_SCPC_SC_PULSE_CONFIG);
+		}
 
-    DataTable[REG_NID_SCPC_CONFIG] = 0;
+		DataTable[REG_NID_SCPC_CONFIG] = 0;
 
-    SetDeviceState(DS_PulseConfigReady);
-    return;
-  }
-  //
+		SetDeviceState(DS_PulseConfigReady);
+		return;
+	}
+	//
 
-  if(DataTable[REG_TOTAL_SCPC]>1)
-  	Nid_Count=1;//Всем учавствующим блокам, кроме 0-го прсваиваем максимальную амплитуду
-  else
-	Nid_Count=0;
+	if(DataTable[REG_TOTAL_SCPC] > 1)
+		Nid_Count = 1; //Всем учавствующим блокам, кроме 0-го прсваиваем максимальную амплитуду
+	else
+		Nid_Count = 0;
 
   while(PulseCount > 0)
 	{
 		switch(PulseCount)
 		{
-			case 1:
-				{
-					CalibratedNID = 0;
-					break;
-				}
 			case 2:
-				{
 					CalibratedNID = DataTable[REG_SCPC_NID_SECOND_GROUP];
 					break;
-				}
 			case 3:
-				{
 					CalibratedNID = DataTable[REG_SCPC_NID_THIRD_GROUP];
 					break;
-				}
 			default:
-				{
 					CalibratedNID = 0;
 					break;
-				}
 		}
 
 		while(CurrentSet > 0)
