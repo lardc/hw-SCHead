@@ -421,29 +421,17 @@ void CONTROL_Idle()
 	//Меняем в ячейке макисмальный ток SCTU, при смене формы импульса
 	if(DataTable[REG_WAVEFORM_TYPE] == WAVEFORM_SINE)
 	{
-		uint32_t SC_Max_Temp = SCPC_SC_SINE_MAX * DataTable[REG_TOTAL_SCPC] / DataTable[REG_PULSE_COUNT];
-		uint16_t MaxSineAmplitude = SCTU_SC_SINE_MAX / DataTable[REG_PULSE_COUNT];
-		DataTable[REG_SC_MAX_L] = (uint16_t)SC_Max_Temp;
-		DataTable[REG_SC_MAX_H] = (uint16_t)(SC_Max_Temp >> 16);
+		uint32_t SCMaxAvailableCurrent = SCPC_SC_SINE_MAX * DataTable[REG_TOTAL_SCPC] / DataTable[REG_PULSE_COUNT];
 
-		if(SC_Max_Temp > MaxSineAmplitude)
-		{
-			DataTable[REG_SC_MAX_L] = MaxSineAmplitude;
-			DataTable[REG_SC_MAX_H] = (MaxSineAmplitude >> 16);
-		}
+		DataTable[REG_SC_MAX_L] = SCMaxAvailableCurrent;
+		DataTable[REG_SC_MAX_H] = (SCMaxAvailableCurrent >> 16);
 	}
 
 	if(DataTable[REG_WAVEFORM_TYPE] == WAVEFORM_TRAPEZE)
 	{
-		uint32_t SC_Max_Temp = SCPC_SC_TRAPEZE_MAX * SCPC_v20_Count;
-		DataTable[REG_SC_MAX_L] = (uint16_t)SC_Max_Temp;
-		DataTable[REG_SC_MAX_H] = (uint16_t)(SC_Max_Temp >> 16);
-
-		if(SC_Max_Temp > SCTU_SC_TRAPEZE_MAX)
-		{
-			DataTable[REG_SC_MAX_L] = (uint16_t)SCTU_SC_TRAPEZE_MAX;
-			DataTable[REG_SC_MAX_H] = (uint16_t)(SCTU_SC_TRAPEZE_MAX >> 16);
-		}
+		uint32_t SCMaxAvailableCurrent = SCPC_SC_TRAPEZE_MAX * SCPC_v20_Count;
+		DataTable[REG_SC_MAX_L] = (uint16_t)SCMaxAvailableCurrent;
+		DataTable[REG_SC_MAX_H] = (uint16_t)(SCMaxAvailableCurrent >> 16);
 	}
 	//
 
@@ -899,7 +887,7 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 
 	Delay_mS(200);
 
-	if(PulseCount < DataTable[REG_PULSE_COUNT])
+	while(PulseCount < DataTable[REG_PULSE_COUNT])
 	{
 		//Запуск сигналов синхронизации для SCPC
 		SCPC_SYNC_SIGNAL_START;
@@ -910,21 +898,20 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 		SCPC_SYNC_SIGNAL_STOP;
 		PulseCount++;
 	}
-	else
-		//Запуск сигналов синхронизации для осциллографа
-		OSC_SYNC_SIGNAL_START;
-		//
-		UI_Dut_MeasureStart();
-		//
-		Delay_mS(5);
-		OSC_SYNC_SIGNAL_STOP;
-		Delay_mS(1);
-		OSC_SYNC_SIGNAL_START;
-		Delay_mS(4);
+	//Запуск сигналов синхронизации для осциллографа
+	OSC_SYNC_SIGNAL_START;
+	//
+	UI_Dut_MeasureStart();
+	//
+	Delay_mS(5);
+	OSC_SYNC_SIGNAL_STOP;
+	Delay_mS(1);
+	OSC_SYNC_SIGNAL_START;
+	Delay_mS(4);
 
-		PulseCount = 0;
+	PulseCount = 0;
 
-		DUT_CLOSE;
+	DUT_CLOSE;
 	//
 
 	Delay_mS(200);
