@@ -275,7 +275,9 @@ void SCPCFind(pBCCIM_Interface Interface)
 	}
 	
 	// Определяем nid подключенных блоков SCPC
-	int SCPC0_Adr = DataTable[REG_SCPC0_ADR];
+	// Проверка на случай после очистки памяти
+	int SCPC0_Adr = DataTable[REG_SCPC0_ADR] == 65535 ? ADR_SCPC0 : DataTable[REG_SCPC0_ADR];
+	DataTable[REG_SCTU_SCPC_NUM] = DataTable[REG_SCTU_SCPC_NUM] == 65535 ? SCTU_NUM_MAX : DataTable[REG_SCTU_SCPC_NUM];
 	while(Nid < (DataTable[REG_SCTU_SCPC_NUM] + SCPC0_Adr))
 	{
 		// Считываем версию блока
