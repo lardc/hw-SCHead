@@ -40,13 +40,15 @@ void DT_Init(EPROMServiceConfig EPROMService, Boolean NoRestore)
 
 void DT_RestoreNVPartFromEPROM()
 {
+	// Смещение сделано, чтобы не считывать в DT значение флага
 	if(EPROMServiceCfg.ReadService)
-		EPROMServiceCfg.ReadService(DT_EPROM_ADDRESS, (pInt16U) &DataTable[DATA_TABLE_NV_START], DATA_TABLE_NV_SIZE);
+		EPROMServiceCfg.ReadService(DT_EPROM_ADDRESS + 2, (pInt16U) &DataTable[DATA_TABLE_NV_START], DATA_TABLE_NV_SIZE);
 }
 // ----------------------------------------
 
 void DT_SaveNVPartToEPROM()
 {
+	// Смещение сделано как часть кода внутри NFLASH_WriteDTShifted
 	if(EPROMServiceCfg.WriteService)
 		EPROMServiceCfg.WriteService(DT_EPROM_ADDRESS, (pInt16U) &DataTable[DATA_TABLE_NV_START], DATA_TABLE_NV_SIZE);
 }

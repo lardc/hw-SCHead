@@ -16,12 +16,14 @@
 #define ADDRESS_FLAG_REGISTER                   0x20007FF0                      //Адрес регистра флагов
 #define ADDRESS_LOADED_PROGRAMM_START           0x08004800                      //Адрес начала памяти загруженной программы
 #define ADDRESS_FLASH_FIRST_PAGE                0x08000000                      //Адрес начала первой страницы FLASH памяти процессора
+#define ADDRESS_FLASH_START_MCU					0x08004000						//Начальный адрес сектора FLASH памяти MCU для пользовательских задач
 //------------------------------------------------
 #define FLAG_RESET_FOR_PROG                     0x1111                          //Значение флага при перезагрузке процессора с последующим перепрограммированием
+#define FLAG_LOAD_MAIN							0x3333							//Значение флага при нормальной загрузке прошивки
 #define FLAG_RESET                              0x4444                          //Значение флага при перезагрузке процессора без перепрограммирования
 //------------------------------------------------
-#define ADDRESS_FLASH_START_MCU                 0x8004000                       //Начальный адрес сектора FLASH памяти MCU для пользовательских задач
 #define MCU_FLASH_SIZE                          0x7FF                           //Размер FLASH памяти MCU для пользовательских задач
+#define FLASH_PAGE_SIZE							0x800							//Размер страницы flash для записи DT
 //------------------------------------------------
 
 
@@ -67,7 +69,7 @@
 
 
 //Переменные
-extern Int64U CONTROL_TimeCounter;
+extern volatile Int64U CONTROL_TimeCounter;
 extern Int64U LED_BlinkTimeCounter;
 extern uint16_t ADC_BUF[ADC_BUFF_LENGTH];
 extern uint16_t ADC_SampleCount[ADC_SC_LENGTH];

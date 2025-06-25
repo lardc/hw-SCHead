@@ -16,6 +16,7 @@
 #include "math.h"
 #include "ZwNFlash.h"
 #include "ZwADC.h"
+#include "Global.h"
 
 // Переменные
 //
@@ -30,6 +31,7 @@ Int16U CONTROL_Values_I_Counter = 0;
 // Функции
 //
 static Boolean CONTROL_DispatchAction(Int16U ActionID, pInt16U pUserError);
+void NFLASH_WriteDTShifted(uint32_t EPROMAddress, uint16_t* Buffer, uint16_t BufferSize);
 //
 
 
@@ -43,7 +45,7 @@ void CONTROL_Init()
 	pInt16U EPDatas[EP_COUNT] = {CONTROL_Values_U, CONTROL_Values_I};
 
 	// Конфигурация сервиса работы Data-table и EPROM
-	EPROMServiceConfig EPROMService = {(FUNC_EPROM_WriteValues)&NFLASH_WriteDT, (FUNC_EPROM_ReadValues)&NFLASH_ReadDT};
+	EPROMServiceConfig EPROMService = {(FUNC_EPROM_WriteValues)&NFLASH_WriteDTShifted, (FUNC_EPROM_ReadValues)&NFLASH_ReadDT};
 
 	// Инициализация data table
 	DT_Init(EPROMService, FALSE);
@@ -338,12 +340,6 @@ static Boolean CONTROL_DispatchAction(Int16U ActionID, pInt16U pUserError)
         DataTable[REG_WARNING]=0;
         break;
       }
-//-------------
-  case ACT_SAVE_DT_TO_FLASH:            //Сохранить DataTable во Flash
-    {
-      DT_SaveNVPartToEPROM();
-      break;
-    }
 //-------------
   case ACT_DT_RESET_TO_DEFAULT:         //Сброс DataTable в состояние по умолчанию
     {
@@ -1152,8 +1148,12 @@ void Delay_mS(uint64_t Delay)
 //------------------------------------------------------------------------------
 void IWDG_Control(void)
 {
-	if(BOOT_LOADER_VARIABLE != BOOT_LOADER_REQUEST)
+	uint32_t McuResetFlag = (*(__IO uint32_t*)ADDRESS_FLAG_REGISTER) & 0xFFFF;
+
+	if((McuResetFlag != FLAG_RESET_FOR_PROG) && (McuResetFlag != FLAG_RESET))
+	{
 		IWDG_Refresh();
+	}
 }
 //------------------------------------------------------------------------------
 
@@ -1161,6 +1161,22 @@ void IWDG_Control(void)
 void UI_Dut_MeasureStart(void)
 {
   TIM_Start(TIM15);
+}
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+void NFLASH_WriteDTShifted(uint32_t EPROMAddress, uint16_t* Buffer, uint16_t BufferSize)
+{
+	// Prepare flash
+	NFLASH_Unlock();
+	NFLASH_ErasePages(EPROMAddress, EPROMAddress + FLASH_PAGE_SIZE);
+
+	// Запись данных сдвинута на 2 байта для сохранения в памяти значения флага
+	NFLASH_WriteArray16(EPROMAddress + 2, Buffer, BufferSize);
+
+	// Выставление флага загрузки прошивки после стирания
+	uint16_t Temp = FLAG_LOAD_MAIN;
+	NFLASH_WriteArray16(ADDRESS_FLASH_START_MCU, &Temp, 1);
 }
 //------------------------------------------------------------------------------
 

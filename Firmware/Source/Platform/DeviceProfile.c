@@ -168,8 +168,24 @@ static Boolean DEVPROFILE_DispatchAction(Int16U ActionID, pInt16U UserError)
 	switch(ActionID)
 	{
 		case ACT_RESET_FOR_PROGRAMMING:
-			BOOT_LOADER_VARIABLE = BOOT_LOADER_REQUEST;
-			break;
+			{
+				volatile pInt16U FlagPointer = (volatile pInt16U)ADDRESS_FLAG_REGISTER;
+				*FlagPointer = FLAG_RESET_FOR_PROG;
+				break;
+			}
+
+		case ACT_SAVE_DT_TO_FLASH:
+			{
+				DT_SaveNVPartToEPROM();
+				break;
+			}
+
+		case ACT_RESET_DEVICE:
+			{
+				volatile pInt16U FlagPointer = (volatile pInt16U)ADDRESS_FLAG_REGISTER;
+				*FlagPointer = FLAG_RESET;
+				break;
+			}
 
 		default:
 			return (ControllerDispatchFunction) ? ControllerDispatchFunction(ActionID, UserError) : FALSE;

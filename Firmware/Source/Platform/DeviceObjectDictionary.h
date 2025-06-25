@@ -7,6 +7,7 @@
 #define ACT_BAT_START_CHARGE                    2                               //Команда блокам SCPowerCell на заряд батареи конденсаторов
 #define ACT_FAULT_CLEAR                         3                               //Очистка fault
 #define ACT_WARNING_CLEAR                       4                               //Очистка warning
+#define ACT_RESET_DEVICE                        5                               //Перезапуск процессора
 //-----------
 #define ACT_SC_PULSE_CONFIG                     100                             //Конфигурация значения ударного тока
 #define ACT_SC_PULSE_START                      101                             //Запуск формирования импульса ударного тока
