@@ -46,7 +46,6 @@ void IWDG_Control(void);
 void SCTU_Config(pBCCIM_Interface Interface);
 void SurgeCurrentProcess(pBCCIM_Interface Interface);
 void ErrorsClear(pBCCIM_Interface Interface);
-uint16_t ReadMailBox(uint16_t Nid, uint16_t MBox, bool ErrorCtrl);
 void UI_Dut_MeasureStart(void);
 void Utm_Measure();
 void SCTU_PulseSineConfig(pBCCIM_Interface Interface);

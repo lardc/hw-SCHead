@@ -150,32 +150,6 @@ void SCPC_Read_Data(pBCCIM_Interface Interface, uint16_t SCPC_id, bool ErrorCtrl
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-uint16_t ReadMailBox(uint16_t Nid, uint16_t MBox, bool ErrorCtrl)
-{
-  //Ожидание прихода ответа или TAIMEOUT
-  for(int i=0;i<SCPC_ANS_TIMEOUT;i++)
-  {
-    Delay_mS(3);
-
-    //Если ответ поступил, то выход
-    if(ZwCAN_GetMailbox(MBox).DataReady)
-    {
-      SCPC_NotAnsCounterControl(Nid, false);
-	  ZwCAN_MessageReceivedReset(MBox);
-      return ZwCAN_GetMailbox(MBox).DWORD0;
-    }
-  }
-
-  if(ErrorCtrl==true)
-  {
-    //Блок SCPC не отвечает
-    SCPC_NotAnsCounterControl(Nid, true);
-  }
-  return 0;
-}
-//------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------
 void SCPC_Command(pBCCIM_Interface Interface, uint16_t SCPC_id, uint16_t Command)
 {
     BCCIM_Call(Interface, SCPC_id, Command);
