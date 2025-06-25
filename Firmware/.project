@@ -210,6 +210,16 @@
 			<locationURI>PARENT-2-PROJECT_LOC/hw-STM32-libs/Library/ZwIWDG.h</locationURI>
 		</link>
 		<link>
+			<name>Source/Library/ZwNCAN.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/hw-STM32-libs/Library/ZwNCAN.c</locationURI>
+		</link>
+		<link>
+			<name>Source/Library/ZwNCAN.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/hw-STM32-libs/Library/ZwNCAN.h</locationURI>
+		</link>
+		<link>
 			<name>Source/Library/ZwNFLASH.c</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/hw-STM32-libs/Library/ZwNFLASH.c</locationURI>

@@ -25,7 +25,7 @@ bool SCPC_CheckStatus(Int16U NodeID, Int16U Status)
 
 void SCPC_WriteData(pBCCIM_Interface Interface, uint16_t Nid, uint16_t Address, uint16_t Data)
 {
-	BCCIM_Write16(Interface, Nid, Address, Data);
+	uint16_t CallBack = BCCIM_Write16(Interface, Nid, Address, Data);
 	
 	// Ожидание прихода ответа или TAIMEOUT
 	for(int i = 0; i < SCPC_ANS_TIMEOUT; i++)
@@ -33,7 +33,7 @@ void SCPC_WriteData(pBCCIM_Interface Interface, uint16_t Nid, uint16_t Address, 
 		Delay_mS(3);
 		
 		// Если ответ поступил, то выход
-		if(ZwCAN_GetMailbox(Master_MBOX_W_16_A).DataReady)
+		if(CallBack == ERR_NO_ERROR)
 		{
 			SCPC_NotAnsCounterControl(Nid, true);
 			return;
@@ -173,7 +173,7 @@ void SCPC_Read_Data(pBCCIM_Interface Interface, uint16_t SCPC_id, bool ErrorCtrl
 
 void SCPC_Command(pBCCIM_Interface Interface, uint16_t SCPC_id, uint16_t Command)
 {
-	BCCIM_Call(Interface, SCPC_id, Command);
+	uint16_t CallBack = BCCIM_Call(Interface, SCPC_id, Command);
 	
 	// Ожидание прихода ответа или TAIMEOUT
 	for(int i = 0; i < SCPC_ANS_TIMEOUT; i++)
@@ -181,7 +181,7 @@ void SCPC_Command(pBCCIM_Interface Interface, uint16_t SCPC_id, uint16_t Command
 		Delay_mS(3);
 		
 		// Если ответ поступил, то выход
-		if(ZwCAN_GetMailbox(Master_MBOX_C_A).DataReady)
+		if(CallBack == ERR_NO_ERROR)
 		{
 			SCPC_NotAnsCounterControl(SCPC_id, false);
 			return;
@@ -280,12 +280,12 @@ void SCPCFind(pBCCIM_Interface Interface)
 	{
 		// Считываем версию блока
 		uint16_t Version = 0;
-		BCCIM_Read16(Interface, Nid, REG_SCPC_VERSION, &Version);
+		uint16_t CallBack = 0;
+		CallBack = BCCIM_Read16(Interface, Nid, REG_SCPC_VERSION, &Version);
 		Delay_mS(2);
 		
-		
 		// Если ответ поступил, то сохраняем текущий Nid в таблицу
-		if(ZwCAN_GetMailbox(Master_MBOX_R_16_A).DataReady)
+		if(CallBack == ERR_NO_ERROR)
 		{
 			SCPC_Save_Nid_Version(Nid, Version);
 			
@@ -294,8 +294,6 @@ void SCPCFind(pBCCIM_Interface Interface)
 			{
 				SCPC_v20_Count++;
 			}
-			
-			ZwCAN_MessageReceivedReset(Master_MBOX_R_16_A);
 		}
 		
 		Nid++;
