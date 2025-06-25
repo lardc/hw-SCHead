@@ -11,7 +11,7 @@
 #include "DataTable.h"
 #include "Controller.h"
 #include "Constraints.h"
-#include "ZwCAN.h"
+#include "ZwNCAN.h"
 #include "ZwSCI.h"
 #include "BCCIMaster.h"
 
@@ -70,11 +70,11 @@ void DEVPROFILE_Init(xCCI_FUNC_CallbackAction SpecializedDispatch, Boolean *Mask
 	RS232_IOConfig.IO_ReceiveArray16 = &ZwSCI_ReceiveArray16;
 	RS232_IOConfig.IO_GetBytesToReceive = &ZwSCI_GetBytesToReceive;
 	RS232_IOConfig.IO_ReceiveByte = &ZwSCI_ReceiveChar;
-	CAN_IOConfig.IO_SendMessage = &ZwCAN_SendMessage_Void;
-	CAN_IOConfig.IO_SendMessageEx = &ZwCAN_SendMessageEx_Void;
-	CAN_IOConfig.IO_GetMessage = &ZwCAN_GetMessage;
-	CAN_IOConfig.IO_IsMessageReceived = &ZwCAN_IsMessageReceived;
-	CAN_IOConfig.IO_ConfigMailbox = &ZwCAN_ConfigMailbox_BCCI;
+	CAN_IOConfig.IO_SendMessage = &NCAN_SendMessage;
+	CAN_IOConfig.IO_SendMessageEx = &NCAN_SendMessageEx;
+	CAN_IOConfig.IO_GetMessage = &NCAN_GetMessage;
+	CAN_IOConfig.IO_IsMessageReceived = &NCAN_IsMessageReceived;
+	CAN_IOConfig.IO_ConfigMailbox = &NCAN_ConfigMailbox;
 
 	// Init service
 	X_ServiceConfig.UserActionCallback = &DEVPROFILE_DispatchAction;

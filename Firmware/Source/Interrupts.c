@@ -7,7 +7,7 @@
 #include "DataTable.h"
 #include "ZwGPIO.h"
 #include "BCCIMaster.h"
-#include "ZwCAN.h"
+#include "ZwNCAN.h"
 #include "Controller.h"
 #include "DeviceProfile.h"
 #include "ZwDMA.h"
@@ -31,11 +31,11 @@ void USART1_IRQHandler()
 //-----------------------------------------
 void USB_LP_CAN1_RX0_IRQHandler(void)
 {
- if (ZwCAN_RecieveCheck(CAN1))
-  {
-    ZwCAN_RecieveData();
-    ZwCAN_RecieveFlagReset(CAN1);
-  }
+	if(NCAN_RecieveCheck())
+	{
+		NCAN_RecieveData();
+		NCAN_RecieveFlagReset();
+	}
 }
 //-----------------------------------------
 

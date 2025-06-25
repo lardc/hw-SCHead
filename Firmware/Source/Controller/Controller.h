@@ -8,7 +8,7 @@
 // Include
 #include "stdinc.h"
 #include "Global.h"
-#include "ZwCAN.h"
+#include "ZwNCAN.h"
 #include "BCCIMaster.h"
 #include "ZwIWDG.h"
 #include "ZwADC.h"

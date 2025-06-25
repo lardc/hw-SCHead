@@ -121,7 +121,7 @@ void SPI_Config(void)
 //------------------------------------------------------------------------------
 void CAN_Config(void)
 {
-	 ZwCAN_Init(CAN_1_ClkEN,SYSCLK,CAN_BAUDRATE);
+	 NCAN_Init(CAN_1_ClkEN,SYSCLK,CAN_BAUDRATE);
 }
 //------------------------------------------------------------------------------
 

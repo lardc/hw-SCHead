@@ -5,7 +5,7 @@
 #ifndef __SCPC_H
 #define __SCPC_H
 
-#include "ZwCAN.h"
+#include "ZwNCAN.h"
 #include "DataTable.h"
 #include "DeviceObjectDictionary.h"
 #include "stdinc.h"

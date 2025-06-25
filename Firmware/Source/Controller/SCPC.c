@@ -1,6 +1,6 @@
 ﻿#include "SCPC.h"
 
-#include "ZwCAN.h"
+#include "ZwNCAN.h"
 
 // Переменные
 uint16_t SCPC_v20_Count = 0;
