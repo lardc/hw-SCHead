@@ -21,7 +21,7 @@
 extern void CONTROL_Idle();
 void SysClk_Config(void);
 void IO_Config(void);
-void CAN_Config(void);
+void CAN_Config();
 void UART_Config();
 void InitializeController(Boolean GoodClock);
 void CONTROL_Init(void);
