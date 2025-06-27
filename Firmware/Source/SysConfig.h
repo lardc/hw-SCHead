@@ -26,7 +26,7 @@
 #define TIMER3_uS                               1000                            //Период работы таймера 3
 //-----------------------
 //CAN
-#define CAN_BAUDRATE                            100000                          //Битрейт CAN
+#define CAN_BAUDRATE                            1000000                          //Битрейт CAN
 #define MASTER_DEVICE_CAN_ADDRESS				8                               //NodeID в режиме master
 #define SLAVE_DEVICE_CAN_ADDRESS				8                               //NodeID в режиме slave
 #define TYPE_DEVICE                             MASTER_DEVICE                   //Тип устройства master/slave
