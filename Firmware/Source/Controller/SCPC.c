@@ -266,6 +266,7 @@ void SCPC_CapChargeStart(pBCCIM_Interface Interface)
 void SCPCFind(pBCCIM_Interface Interface)
 {
 	Int16U Nid = ADR_SCPC0;
+	SCPC_v20_Count = 0;
 	
 	// Ждем 1000 мС пока запустяться все блоки SCPC
 	uint64_t SCPC_WaitStart = CONTROL_TimeCounter + 1000;
@@ -276,15 +277,14 @@ void SCPCFind(pBCCIM_Interface Interface)
 	
 	// Определяем nid подключенных блоков SCPC
 	// Проверка на случай после очистки памяти
-	int SCPC0_Adr = DataTable[REG_SCPC0_ADR] == 65535 ? ADR_SCPC0 : DataTable[REG_SCPC0_ADR];
-	DataTable[REG_SCTU_SCPC_NUM] = DataTable[REG_SCTU_SCPC_NUM] == 65535 ? SCTU_NUM_MAX : DataTable[REG_SCTU_SCPC_NUM];
+	int SCPC0_Adr = DataTable[REG_SCPC0_ADR] == 65535 ? 0 : DataTable[REG_SCPC0_ADR];
+	DataTable[REG_SCTU_SCPC_NUM] = DataTable[REG_SCTU_SCPC_NUM] == 65535 ? 0 : DataTable[REG_SCTU_SCPC_NUM];
 	while(Nid < (DataTable[REG_SCTU_SCPC_NUM] + SCPC0_Adr))
 	{
 		// Считываем версию блока
 		uint16_t Version = 0;
 		Int16U CallBack;
 		CallBack = BCCIM_Read16(Interface, Nid, REG_SCPC_VERSION, &Version);
-		Delay_mS(2);
 		
 		// Если ответ поступил, то сохраняем текущий Nid в таблицу
 		if(CallBack == ERR_NO_ERROR)
@@ -293,9 +293,7 @@ void SCPCFind(pBCCIM_Interface Interface)
 			
 			// Считаем количество блоков v.2.0
 			if(Version == SCPC_VERSION_20)
-			{
 				SCPC_v20_Count++;
-			}
 		}
 		
 		Nid++;
