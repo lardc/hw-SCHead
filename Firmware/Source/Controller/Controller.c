@@ -712,7 +712,7 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 	float SC_K_Set, SC_B_Set;
 	Int16U PulseCount = DataTable[REG_PULSE_COUNT];
 	Int32U CurrentSetTemp = 0;
-	Int16U CalibratedNID;
+	Int16U CalibratedNID = 0;
 
 	//Распределяем значение ударного тока по блокам SCPC
 	CurrentSet = (DataTable[REG_SC_VALUE_H] << 16);
@@ -780,10 +780,18 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 		switch(PulseCount)
 		{
 			case 2:
-					CalibratedNID = DataTable[REG_SCPC_NID_SECOND_GROUP];
+				for(int i = 0; i < DataTable[REG_TOTAL_SCPC]; i++)
+				{
+					if(SCPC_Data[i].Nid == DataTable[REG_SCPC_NID_SECOND_GROUP])
+						CalibratedNID = i;
+				}
 					break;
 			case 3:
-					CalibratedNID = DataTable[REG_SCPC_NID_THIRD_GROUP];
+				for(int i = 0; i < DataTable[REG_TOTAL_SCPC]; i++)
+				{
+					if(SCPC_Data[i].Nid == DataTable[REG_SCPC_NID_THIRD_GROUP])
+						CalibratedNID = i;
+				}
 					break;
 			default:
 					CalibratedNID = 0;
