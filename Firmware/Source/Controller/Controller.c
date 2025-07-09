@@ -895,22 +895,24 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 	{
 		//Запуск сигналов синхронизации для SCPC
 		SCPC_SYNC_SIGNAL_START;
+		OSC_SYNC_SIGNAL_START;
 
 		//Задержка запуска формирования импульса для выхода
 		Delay_mS(DELAY_PULSE_START);
 		//
 		SCPC_SYNC_SIGNAL_STOP;
+		OSC_SYNC_SIGNAL_STOP;
 		PulseCount++;
 	}
 	//Запуск сигналов синхронизации для осциллографа
-	OSC_SYNC_SIGNAL_START;
+	//OSC_SYNC_SIGNAL_START;
 	//
 	UI_Dut_MeasureStart();
 	//
 	Delay_mS(5);
-	OSC_SYNC_SIGNAL_STOP;
+	//OSC_SYNC_SIGNAL_STOP;
 	Delay_mS(1);
-	OSC_SYNC_SIGNAL_START;
+	//OSC_SYNC_SIGNAL_START;
 	Delay_mS(4);
 
 	PulseCount = 0;

@@ -265,7 +265,7 @@ void SCPC_CapChargeStart(pBCCIM_Interface Interface)
 
 void SCPCFind(pBCCIM_Interface Interface)
 {
-	Int16U Nid = ADR_SCPC0;
+	uint16_t Nid = DataTable[REG_SCPC0_ADR] == 65535 ? ADR_SCPC0 : DataTable[REG_SCPC0_ADR];
 	SCPC_v20_Count = 0;
 	
 	// Ждем 1000 мС пока запустяться все блоки SCPC
