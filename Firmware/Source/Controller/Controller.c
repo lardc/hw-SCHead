@@ -872,6 +872,8 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 {
 	uint16_t Nid_Count = 0;
 	Int16U PulseCount = 0;
+	// Пауза разделена на 2 части, 2-я часть в SCPC = 9 мс
+	Int16U PauseActual = 1 + (DataTable[REG_PAUSE_DURATION] / 1000 - 10);
 
 	if(DataTable[REG_DUT_TYPE] == THYRISTOR)
 	{
@@ -905,7 +907,7 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 			SCPC_SYNC_SIGNAL_STOP;
 			OSC_SYNC_SIGNAL_STOP;
 			PulseCount++;
-			Delay_mS(1);
+			Delay_mS(PauseActual);
 		}
 		//
 		UI_Dut_MeasureStart();
@@ -924,7 +926,7 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 			//
 			SCPC_SYNC_SIGNAL_STOP;
 			PulseCount++;
-			Delay_mS(1);
+			Delay_mS(PauseActual);
 		}
 		//Запуск сигналов синхронизации для осциллографа
 		OSC_SYNC_SIGNAL_START;

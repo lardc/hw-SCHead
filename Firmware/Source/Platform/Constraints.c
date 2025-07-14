@@ -105,7 +105,7 @@ const TableItemConstraint VConstraint[DATA_TABLE_WP_START - DATA_TABLE_WR_START]
   {0, 0, 0},																	// 89
   {SYNC_OSC, SYNC_SCPC, SYNC_OSC},												// 90
   {0, 0, 0},																	// 91
-  {0, 0, 0},																	// 92
+  {PULSE_DURATION_MIN, PULSE_DURATION_MAX, PULSE_DURATION_DEF},					// 92
   {0, 0, 0},																	// 93
   {0, 0, 0},																	// 94
 };
