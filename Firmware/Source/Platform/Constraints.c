@@ -103,7 +103,7 @@ const TableItemConstraint VConstraint[DATA_TABLE_WP_START - DATA_TABLE_WR_START]
   {0, 0, 0},																	// 87
   {0, 0, 0},																	// 88
   {0, 0, 0},																	// 89
-  {0, 0, 0},																	// 90
+  {SYNC_OSC, SYNC_SCPC, SYNC_OSC},												// 90
   {0, 0, 0},																	// 91
   {0, 0, 0},																	// 92
   {0, 0, 0},																	// 93

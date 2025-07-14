@@ -17,6 +17,9 @@
 
 #define PULSE_COUNT_MIN					1
 #define PULSE_COUNT_MAX					3
+//
+#define SYNC_OSC						0
+#define SYNC_SCPC						1
 // Types
 //
 typedef struct __TableItemConstraint

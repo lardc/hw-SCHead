@@ -890,36 +890,59 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 	}
 
 	Delay_mS(200);
-
-	while(PulseCount < DataTable[REG_PULSE_COUNT])
+	if (DataTable[REG_SYNC_SWITCH])
 	{
-		//Запуск сигналов синхронизации для SCPC
-		SCPC_SYNC_SIGNAL_START;
-		OSC_SYNC_SIGNAL_START;
+		while(PulseCount < DataTable[REG_PULSE_COUNT])
+		{
+			//Запуск сигналов синхронизации для SCPC
+			SCPC_SYNC_SIGNAL_START;
+			//Запуск сигналов синхронизации для осциллографа
+			OSC_SYNC_SIGNAL_START;
 
-		//Задержка запуска формирования импульса для выхода
-		Delay_mS(DELAY_PULSE_START);
+			//Задержка запуска формирования импульса для выхода
+			Delay_mS(DELAY_PULSE_START);
+			//
+			SCPC_SYNC_SIGNAL_STOP;
+			OSC_SYNC_SIGNAL_STOP;
+			PulseCount++;
+			Delay_mS(1);
+		}
 		//
-		SCPC_SYNC_SIGNAL_STOP;
-		OSC_SYNC_SIGNAL_STOP;
-		PulseCount++;
+		UI_Dut_MeasureStart();
+		//
+		Delay_mS(6);
 	}
-	//Запуск сигналов синхронизации для осциллографа
-	//OSC_SYNC_SIGNAL_START;
-	//
-	UI_Dut_MeasureStart();
-	//
-	Delay_mS(5);
-	//OSC_SYNC_SIGNAL_STOP;
-	Delay_mS(1);
-	//OSC_SYNC_SIGNAL_START;
+	else
+	{
+		while(PulseCount < DataTable[REG_PULSE_COUNT])
+		{
+			//Запуск сигналов синхронизации для SCPC
+			SCPC_SYNC_SIGNAL_START;
+
+			//Задержка запуска формирования импульса для выхода
+			Delay_mS(DELAY_PULSE_START);
+			//
+			SCPC_SYNC_SIGNAL_STOP;
+			PulseCount++;
+			Delay_mS(1);
+		}
+		//Запуск сигналов синхронизации для осциллографа
+		OSC_SYNC_SIGNAL_START;
+		//
+		UI_Dut_MeasureStart();
+		//
+		Delay_mS(5);
+		OSC_SYNC_SIGNAL_STOP;
+		Delay_mS(1);
+		OSC_SYNC_SIGNAL_START;
+	}
+
 	Delay_mS(4);
 
 	PulseCount = 0;
 
 	DUT_CLOSE;
 	//
-
 	Delay_mS(200);
 
 	//Считываем статусы блоков SCPC
