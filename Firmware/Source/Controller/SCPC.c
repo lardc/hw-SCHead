@@ -11,37 +11,17 @@ struct SCPC_Data_Struct SCPC_Data[SCTU_NUM_MAX];
 // ------------------------------------------------------------------------------
 bool SCPC_CheckStatus(Int16U NodeID, Int16U Status)
 {
-	// Если эмуляция SCPC включена, то возвращаем 1
-	if(DataTable[REG_SCPC_EMULATION] == EMUL_SCPC_EN)
-		return 1;
-	
-	// Иначе проверяем статус требуемого блока
-	if(SCPC_Data[NodeID].DevState == Status)
-		return 1;
-	else
-		return 0;
+	// Если эмуляция SCPC включена или статус соответствует
+	return (DataTable[REG_SCPC_EMULATION] == EMUL_SCPC_EN) || (SCPC_Data[NodeID].DevState == Status);
 }
 // -----------------------------------------------------------------------------
 
 void SCPC_WriteData(pBCCIM_Interface Interface, uint16_t Nid, uint16_t Address, uint16_t Data)
 {
-	uint16_t CallBack = BCCIM_Write16(Interface, Nid, Address, Data);
-	
-	// Ожидание прихода ответа или TAIMEOUT
-	for(int i = 0; i < SCPC_ANS_TIMEOUT; i++)
-	{
-		Delay_mS(3);
-		
-		// Если ответ поступил, то выход
-		if(CallBack == ERR_NO_ERROR)
-		{
-			SCPC_NotAnsCounterControl(Nid, true);
-			return;
-		}
-	}
-	
-	// Блок SCPC не отвечает
-	SCPC_NotAnsCounterControl(Nid, true);
+	uint16_t Status = BCCIM_Write16(Interface, Nid, Address, Data);
+
+	// Блок SCPC не отвечает — передаём true
+	SCPC_NotAnsCounterControl(Nid, ERR_NO_ERROR != Status);
 }
 // -----------------------------------------------------------------------------
 
@@ -173,23 +153,10 @@ void SCPC_Read_Data(pBCCIM_Interface Interface, uint16_t SCPC_id, bool ErrorCtrl
 
 void SCPC_Command(pBCCIM_Interface Interface, uint16_t SCPC_id, uint16_t Command)
 {
-	uint16_t CallBack = BCCIM_Call(Interface, SCPC_id, Command);
+	uint16_t Status = BCCIM_Call(Interface, SCPC_id, Command);
 	
-	// Ожидание прихода ответа или TAIMEOUT
-	for(int i = 0; i < SCPC_ANS_TIMEOUT; i++)
-	{
-		Delay_mS(3);
-		
-		// Если ответ поступил, то выход
-		if(CallBack == ERR_NO_ERROR)
-		{
-			SCPC_NotAnsCounterControl(SCPC_id, false);
-			return;
-		}
-	}
-	
-	// Блок SCPC не отвечает
-	SCPC_NotAnsCounterControl(SCPC_id, true);
+	// Блок SCPC не отвечает — передаём true
+	SCPC_NotAnsCounterControl(SCPC_id, ERR_NO_ERROR != Status);
 }
 // -----------------------------------------------------------------------------
 
