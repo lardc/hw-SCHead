@@ -26,6 +26,7 @@ Int16U CONTROL_Values_U[VALUES_x_SIZE];
 Int16U CONTROL_Values_I[VALUES_x_SIZE];
 Int16U CONTROL_Values_U_Counter = 0;
 Int16U CONTROL_Values_I_Counter = 0;
+volatile Int16U CONTROL_RawCounter = 0;
 
 
 // Функции
@@ -39,10 +40,11 @@ void NFLASH_WriteDTShifted(uint32_t EPROMAddress, uint16_t* Buffer, uint16_t Buf
 void CONTROL_Init()
 {
 	// Переменные для конфигурации EndPoint
-	Int16U EPIndexes[EP_COUNT] = {EP16_Data_U, EP16_Data_I};
-	Int16U EPSized[EP_COUNT] = {VALUES_x_SIZE, VALUES_x_SIZE};
-	pInt16U EPCounters[EP_COUNT] = {(pInt16U)&CONTROL_Values_U_Counter, (pInt16U)&CONTROL_Values_I_Counter};
-	pInt16U EPDatas[EP_COUNT] = {CONTROL_Values_U, CONTROL_Values_I};
+	Int16U EPIndexes[EP_COUNT] = {EP16_Data_U, EP16_Data_I, EP16_RawData};
+	Int16U EPSized[EP_COUNT] = {VALUES_x_SIZE, VALUES_x_SIZE, ADC_BUFF_LENGTH};
+	pInt16U EPCounters[EP_COUNT] = {(pInt16U)&CONTROL_Values_U_Counter, (pInt16U)&CONTROL_Values_I_Counter,
+			(pInt16U)&CONTROL_RawCounter};
+	pInt16U EPDatas[EP_COUNT] = {CONTROL_Values_U, CONTROL_Values_I, (pInt16U)ADC_BUF};
 
 	// Конфигурация сервиса работы Data-table и EPROM
 	EPROMServiceConfig EPROMService = {(FUNC_EPROM_WriteValues)&NFLASH_WriteDTShifted, (FUNC_EPROM_ReadValues)&NFLASH_ReadDT};

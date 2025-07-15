@@ -71,7 +71,7 @@
 //Переменные
 extern volatile Int64U CONTROL_TimeCounter;
 extern Int64U LED_BlinkTimeCounter;
-extern uint16_t ADC_BUF[ADC_BUFF_LENGTH];
+extern volatile uint16_t ADC_BUF[ADC_BUFF_LENGTH];
 extern uint16_t ADC_SampleCount[ADC_SC_LENGTH];
 extern uint16_t ADC_SC_Shift;
 //

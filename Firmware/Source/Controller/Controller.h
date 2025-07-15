@@ -28,11 +28,11 @@
 
 // Переменные
 //
-extern Int16U CONTROL_Values_U[VALUES_x_SIZE];
-extern Int16U CONTROL_Values_I[VALUES_x_SIZE];
+extern Int16U CONTROL_Values_U[];
+extern Int16U CONTROL_Values_I[];
 extern Int16U CONTROL_Values_U_Counter;
 extern Int16U CONTROL_Values_I_Counter;
-//
+extern volatile Int16U CONTROL_RawCounter;
 
 
 // Функции

@@ -64,6 +64,7 @@ void TIM3_IRQHandler(void)
 void DMA1_Channel1_IRQHandler(void)
 {
     TIM_Stop(TIM15);
+    CONTROL_RawCounter = ADC_BUFF_LENGTH;
     DMA_TransferCompleteFlagReset(DMA_IFCR_CTCIF1);
 }
 //-----------------------------------------
