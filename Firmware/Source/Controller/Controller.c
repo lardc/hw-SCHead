@@ -903,6 +903,7 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 		SCPC_SYNC_SIGNAL_STOP;
 		OSC_SYNC_SIGNAL_STOP;
 		PulseCount++;
+		Delay_mS(1);
 	}
 	//Запуск сигналов синхронизации для осциллографа
 	//OSC_SYNC_SIGNAL_START;
