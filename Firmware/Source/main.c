@@ -151,6 +151,9 @@ void ADC_Init(void)
 	ADC_ChannelSet_Sequence(ADC1, 4, 2);
 	ADC_ChannelSeqLen(ADC1, 2);
 
+	ADC_ChannelSet_SampleTime(ADC1, 3, ADC_SMPL_TIME_1_5);
+	ADC_ChannelSet_SampleTime(ADC1, 4, ADC_SMPL_TIME_1_5);
+
 	ADC_DMAConfig(ADC1);
 	ADC_SamplingStart(ADC1);
 }
