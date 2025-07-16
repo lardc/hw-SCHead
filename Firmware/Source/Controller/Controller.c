@@ -961,176 +961,149 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 //------------------------------------------------------------------------------
 void Utm_Measure()
 {
-  //Переменные
-  static float I_Temp=0;
-  static float U_Temp=0;
-  static float ADC_Imax=0,Umax=0;
-  static float VoltageKoef;
-  uint16_t I_Offset,U_Offset;
-  static float CurrentKoef;
-  int ADC_SampleAddress = 0;
+	//Переменные
+	static float I_Temp = 0;
+	static float U_Temp = 0;
+	static float ADC_Imax = 0, Umax = 0;
+	static float VoltageKoef;
+	uint16_t I_Offset, U_Offset;
+	static float CurrentKoef;
+	int ADC_SampleAddress = 0;
 
+	uint16_t ImaxSCAdr = 0;
+	uint16_t AvgDiv = 0;
+	double DataAvg = 0;
 
-  uint16_t ImaxSCAdr=0;
-  uint16_t AvgDiv=0;
-  double DataAvg=0;
-  //
+	//Обнуление массива
+	for(int c = 0; c < ADC_SC_LENGTH; c++)
+		ADC_SampleCount[c] = 0;
 
-  //Обнуление массива
-  for(int c=0;c<ADC_SC_LENGTH;c++)
-  {
-    ADC_SampleCount[c] = 0;
-  }
-  //
+	if(DataTable[REG_CHANNEL] == CHANNEL_1)
+	{
+		U_Offset = DataTable[REG_U1_OFFSET];
+		I_Offset = DataTable[REG_I1_OFFSET];
+	}
+	else
+	{
+		U_Offset = DataTable[REG_U2_OFFSET];
+		I_Offset = DataTable[REG_I2_OFFSET];
+	}
 
-  if(DataTable[REG_CHANNEL]==CHANNEL_1)
-  {
-	  U_Offset=DataTable[REG_U1_OFFSET];
-	  I_Offset=DataTable[REG_I1_OFFSET];
-  }
-  else
-  {
-	  U_Offset=DataTable[REG_U2_OFFSET];
-	  I_Offset=DataTable[REG_I2_OFFSET];
+	//---------------Подсчет количества одинаковых сэмплов АЦП--------------
+	ADC_SC_Shift = ADC_BUF[EXTREMUM_START_POINT + 1];
 
-  }
+	for(int Ecount = EXTREMUM_START_POINT; Ecount < EXTREMUM_STOP_POINT; Ecount += 2)
+	{
+		ADC_SampleAddress = ADC_BUF[Ecount + 1] - ADC_SC_Shift;
 
-  //---------------Подсчет количества одинаковых сэмплов АЦП--------------
-  ADC_SC_Shift=ADC_BUF[EXTREMUM_START_POINT+1];
+		if(ADC_SampleAddress >= 0)
+			ADC_SampleCount[ADC_SampleAddress]++;
+	}
+	//--------------------------------------------------------------
 
-  for(volatile int Ecount=EXTREMUM_START_POINT;Ecount<EXTREMUM_STOP_POINT;Ecount+=2)
-  {
-    ADC_SampleAddress = ADC_BUF[Ecount+1]-ADC_SC_Shift;
+	//--------Определение и усреднение амплитуды тока---------------
+	ImaxSCAdr = ADC_SC_LENGTH - 1;
+	while((ADC_SampleCount[ImaxSCAdr] < ADC_I_SAMPLE_THRESHOLD) && (ImaxSCAdr > 0))
+		ImaxSCAdr--;
 
-    if(ADC_SampleAddress>=0)
-    {
-      ADC_SampleCount[ADC_SampleAddress]++;
-    }
-  }
-  //--------------------------------------------------------------
+	for(int i = 0; i < ADC_I_SAMPLE_THRESHOLD; i++)
+	{
+		AvgDiv += ADC_SampleCount[ImaxSCAdr - i];
+		DataAvg += (ImaxSCAdr + ADC_SC_Shift) * ADC_SampleCount[ImaxSCAdr - i];
+	}
+	ADC_Imax = DataAvg / AvgDiv;
 
+	//Преобразование результата в Амперы и введение калибровочной поправки
+	CurrentKoef = ((float)DataTable[REG_K_DUT_I]);
+	CurrentKoef = CurrentKoef / DataTable[REG_R_SHUNT] / Ky_ShuntAmplifier;
+	ADC_Imax = ADC_Imax * CurrentKoef - I_Offset;
 
-  //--------Определение и усреднение амплитуды тока---------------
-  ImaxSCAdr=ADC_SC_LENGTH-1;
-  while((ADC_SampleCount[ImaxSCAdr]<ADC_I_SAMPLE_THRESHOLD)&&(ImaxSCAdr>0))
-  {
-	  ImaxSCAdr--;
-  }
+	ADC_Imax = (uint32_t)(ADC_Imax * (((float)K_ShuntAmplifier) / 1000) + B_ShuntAmplifier);
+	DataTable[REG_DUT_I_H] = (((uint32_t)ADC_Imax) & 0xffff0000) >> 16;
+	DataTable[REG_DUT_I_L] = ((uint32_t)ADC_Imax) & 0x0000ffff;
 
-  for(volatile int i=0;i<ADC_I_SAMPLE_THRESHOLD;i++)
-  {
-    AvgDiv += ADC_SampleCount[ImaxSCAdr-i];
-    DataAvg += (ImaxSCAdr+ADC_SC_Shift)*ADC_SampleCount[ImaxSCAdr-i];
-  }
+	uint32_t CurrentMax = DataTable[REG_SC_MAX_H] << 16;
+	CurrentMax |= DataTable[REG_SC_MAX_L];
+	uint32_t CurrentDut = DataTable[REG_DUT_I_H] << 16;
+	CurrentDut |= DataTable[REG_DUT_I_L];
 
-  ADC_Imax = DataAvg/AvgDiv;
+	if(CurrentDut > CurrentMax)
+		DataTable[REG_WARNING] = WARNING_I_OUT_OF_RANGE;
 
-  //Преобразование результата в Амперы и введение калибровочной поправки
-  CurrentKoef = ((float)DataTable[REG_K_DUT_I]);
-  CurrentKoef = CurrentKoef/DataTable[REG_R_SHUNT]/Ky_ShuntAmplifier;
-  ADC_Imax=ADC_Imax*CurrentKoef - I_Offset;
+	if(DataTable[REG_DUT_U] > VOLTAGE_MEASURE_MAX)
+		DataTable[REG_WARNING] = WARNING_U_OUT_OF_RANGE;
+	//-------------------------------------------------------------
 
-  ADC_Imax = (uint32_t)(ADC_Imax*(((float)K_ShuntAmplifier)/1000) + B_ShuntAmplifier);
-  DataTable[REG_DUT_I_H] = (((uint32_t)ADC_Imax)&0xffff0000)>>16;
-  DataTable[REG_DUT_I_L] = ((uint32_t)ADC_Imax)&0x0000ffff;
-  //
+	//--------Усреднение напряжения в точке экстремума тока--------
+	uint16_t IavgStart = ADC_SC_Shift + ImaxSCAdr - ADC_I_SAMPLE_THRESHOLD + 1;
 
+	//Поиск точки экстремума тока
+	uint16_t ExtremumCount = EXTREMUM_START_POINT;
+	while(ADC_BUF[ExtremumCount + 1] != IavgStart)
+	{
+		ExtremumCount += 2;
 
-  uint32_t CurrentMax = DataTable[REG_SC_MAX_H]<<16;
-  CurrentMax |= DataTable[REG_SC_MAX_L];
-  uint32_t CurrentDut = DataTable[REG_DUT_I_H]<<16;
-  CurrentDut |= DataTable[REG_DUT_I_L];
+		if(ExtremumCount >= ADC_BUFF_LENGTH)
+		{
+			SetDeviceState(DS_PulseEnd);
+			DataTable[REG_WARNING] = WARNING_I_OUT_OF_RANGE;
+			return;
+		}
+	}
 
-  if(CurrentDut>CurrentMax)
-  {
-    DataTable[REG_WARNING] = WARNING_I_OUT_OF_RANGE;
-  }
+	//Значение ExtremumCount должно быть четным, чтобы значения тока и напряжения не поменялись местами
+	if(ExtremumCount & 0x1)
+		ExtremumCount++;
 
-  if(DataTable[REG_DUT_U]>VOLTAGE_MEASURE_MAX)
-  {
-    DataTable[REG_WARNING] = WARNING_U_OUT_OF_RANGE;
-  }
-  //-------------------------------------------------------------
+	Umax = 0;
+	for(int avg_count = 0; avg_count < AvgDiv; avg_count++)
+		Umax += ADC_BUF[ExtremumCount + avg_count * 2];
+	Umax = Umax / AvgDiv;
 
+	//Преобразование результата в Вольты и введение калибровочной поправки
+	VoltageKoef = ((float)DataTable[REG_K_DUT_U]) / 1000;
+	Umax = Umax * VoltageKoef - U_Offset;
 
-  //--------Усреднение напряжения в точке экстремума тока--------
+	U_Temp = (Int16S)DataTable[REG_K_U_CAL];
+	U_Temp = U_Temp / 1000;
 
-  uint16_t IavgStart = ADC_SC_Shift+ImaxSCAdr-ADC_I_SAMPLE_THRESHOLD+1;
+	//Калибровка погрешности измерения напряжения
+	DataTable[REG_DUT_U] = (uint16_t)(U_Temp * Umax + (Int16S)DataTable[REG_B_U_CAL]);
+	//--------------------------------------------------------------
 
-  //Поиск точки экстремума тока
-  uint16_t ExtremumCount = EXTREMUM_START_POINT;
-  while(ADC_BUF[ExtremumCount+1]!=IavgStart)
-  {
-    ExtremumCount+=2;
+	//Перемещение данных оцифрованных сигналов в свои endpoint.
+	ExtremumCount += AVERAGE_POINTS / 2;
+	if(ExtremumCount & 0x1)
+		ExtremumCount++;
 
-    if(ExtremumCount>=ADC_BUFF_LENGTH)
-    {
-      SetDeviceState(DS_PulseEnd);
-      DataTable[REG_WARNING] = WARNING_I_OUT_OF_RANGE;
-      return;
-    }
-  }
-  //
+	for(int a = 0; a < EP_SIZE; a++)
+	{
+		//Преобразуем результат в Вольты
+		VoltageKoef = ((float)DataTable[REG_DUT_U] + U_Offset) / ADC_BUF[ExtremumCount];
+		U_Temp = ADC_BUF[a * 2] * VoltageKoef - U_Offset;
+		CONTROL_Values_U[a] = (uint16_t)(U_Temp);
 
-  //Значение ExtremumCount должно быть четным, чтобы значения тока и напряжения не поменялись местами
-  if(ExtremumCount&0x1){ExtremumCount++;}
-  //
+		//Преобразуем результат в Амперы и вводим калибровочную поправку
+		CurrentKoef = ((float)DataTable[REG_K_DUT_I]);
+		CurrentKoef = CurrentKoef / DataTable[REG_R_SHUNT] / Ky_ShuntAmplifier;
 
-  Umax = 0;
+		I_Temp = K_ShuntAmplifier;
+		I_Temp = I_Temp / 1000 * (ADC_BUF[a * 2 + 1] * CurrentKoef) - I_Offset;
 
-  for(volatile int avg_count=0;avg_count<AvgDiv;avg_count++)
-  {
-      Umax += ADC_BUF[ExtremumCount+avg_count*2];
-  }
+		//Калибровка погрешности измерения тока
+		CONTROL_Values_I[a] = (uint16_t)((float)(I_Temp + B_ShuntAmplifier) / 10);
+		IWDG_Control();
+	}
 
-  Umax = Umax/AvgDiv;
-
-  //Преобразование результата в Вольты и введение калибровочной поправки
-  VoltageKoef = ((float)DataTable[REG_K_DUT_U])/1000;
-  Umax=Umax*VoltageKoef - U_Offset;
-
-  U_Temp = (Int16S)DataTable[REG_K_U_CAL];
-  U_Temp = U_Temp/1000;
-  DataTable[REG_DUT_U] = (uint16_t)(U_Temp*Umax  + (Int16S)DataTable[REG_B_U_CAL]);//Калибровка погрешности измерения напряжения
-  //
-  //--------------------------------------------------------------
-
-
-  //Перемещение данных оцифрованных сигналов в свои endpoint.
-  ExtremumCount += AVERAGE_POINTS/2;
-  if(ExtremumCount&0x1){ExtremumCount++;}
-
-  for(volatile int a=0;a<EP_SIZE;a++)
-  {
-    //Преобразуем результат в Вольты
-    VoltageKoef = ((float)DataTable[REG_DUT_U] + U_Offset)/ADC_BUF[ExtremumCount];
-    U_Temp = ADC_BUF[a*2]*VoltageKoef - U_Offset;
-    CONTROL_Values_U[a] = (uint16_t)(U_Temp);
-    //
-
-    //Преобразуем результат в Амперы и вводим калибровочную поправку
-    CurrentKoef = ((float)DataTable[REG_K_DUT_I]);
-    CurrentKoef = CurrentKoef/DataTable[REG_R_SHUNT]/Ky_ShuntAmplifier;
-
-    I_Temp = K_ShuntAmplifier;
-    I_Temp = I_Temp/1000*(ADC_BUF[a*2+1]*CurrentKoef)-I_Offset;
-    CONTROL_Values_I[a] = (uint16_t)((float)(I_Temp+B_ShuntAmplifier) / 10);//Калибровка погрешности измерения тока
-    //
-
-    IWDG_Control();
-  }
-
-  CONTROL_Values_U_Counter=EP_SIZE;
-  CONTROL_Values_I_Counter=EP_SIZE;
-  //
+	CONTROL_Values_U_Counter = EP_SIZE;
+	CONTROL_Values_I_Counter = EP_SIZE;
 }
 //------------------------------------------------------------------------------
-
 
 //------------------------------------------------------------------------------
 void SetDeviceFault(Int16U Fault)
 {
-  DataTable[REG_FAULT_REASON] = Fault;
+	DataTable[REG_FAULT_REASON] = Fault;
 }
 //------------------------------------------------------------------------------
 
@@ -1144,9 +1117,12 @@ void SetDeviceState(DeviceState NewState)
 //------------------------------------------------------------------------------
 void Delay_mS(uint64_t Delay)
 {
-  TIM_Reset(TIM3);
-  uint64_t Counter = CONTROL_TimeCounter;
-  while(CONTROL_TimeCounter<(Counter+Delay)){IWDG_Control();}
+	TIM_Reset(TIM3);
+	uint64_t Counter = CONTROL_TimeCounter;
+	while(CONTROL_TimeCounter < (Counter + Delay))
+	{
+		IWDG_Control();
+	}
 }
 //------------------------------------------------------------------------------
 
@@ -1165,7 +1141,7 @@ void IWDG_Control(void)
 //------------------------------------------------------------------------------
 void UI_Dut_MeasureStart(void)
 {
-  TIM_Start(TIM15);
+	TIM_Start(TIM15);
 }
 //------------------------------------------------------------------------------
 
