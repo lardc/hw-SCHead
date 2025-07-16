@@ -95,7 +95,7 @@ const TableItemConstraint VConstraint[DATA_TABLE_WP_START - DATA_TABLE_WR_START]
   {0, 0, 0},																	// 79
   {PULSE_DURATION_MIN, PULSE_DURATION_MAX, PULSE_DURATION_DEF},		   		    // 80
   {PULSE_COUNT_MIN, PULSE_COUNT_MAX, PULSE_COUNT_MIN},							// 81
-  {0, 0, 0},																	// 82
+  {PULSE_DURATION_MIN, PULSE_DURATION_MAX, PULSE_DURATION_DEF},					// 82
   {0, 0, 0},																	// 83
   {0, 0, 0},																	// 84
   {0, 0, 0},																	// 85
@@ -103,7 +103,7 @@ const TableItemConstraint VConstraint[DATA_TABLE_WP_START - DATA_TABLE_WR_START]
   {0, 0, 0},																	// 87
   {0, 0, 0},																	// 88
   {0, 0, 0},																	// 89
-  {0, 0, 0},																	// 90
+  {0, 1, 0},																	// 90
   {0, 0, 0},																	// 91
   {0, 0, 0},																	// 92
   {0, 0, 0},																	// 93

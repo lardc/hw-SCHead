@@ -876,8 +876,16 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 			return;
 		}
 	}
-
 	Delay_mS(200);
+
+	// Полный цикл формирования состоит из:
+	// 1. Фиксированная задержка SCPC_PREPULSE_PAUSE перед импульсом
+	// 2. Длительность импульса
+	// 3. Фиксированная минимальная 1мс между импульсами
+	// 4. Переменная задержка между импульсами
+
+	Int16U PulseDelay = DataTable[REG_PULSE_DURATION] / 1000;
+	Int16U PauseDelay = DataTable[REG_PAUSE_DURATION] / 1000 - SCPC_PREPULSE_PAUSE;
 
 	while(PulseCount < DataTable[REG_PULSE_COUNT])
 	{
@@ -885,36 +893,21 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 		SCPC_SYNC_SIGNAL_START;
 		OSC_SYNC_SIGNAL_START;
 
-		// Задержка запуска формирования импульса для выхода
+		Delay_mS(SCPC_PREPULSE_PAUSE);
+
 		// Оцифровка запускается на последнем импульсе
 		if(PulseCount == (DataTable[REG_PULSE_COUNT] - 1))
-		{
-			Delay_mS(9);
 			UI_Dut_MeasureStart();
-			Delay_mS(DataTable[REG_PULSE_DURATION] / 1000);
-		}
-		else
-			Delay_mS(DELAY_PULSE_START);
+
+		Delay_mS(PulseDelay);
 
 		SCPC_SYNC_SIGNAL_STOP;
 		OSC_SYNC_SIGNAL_STOP;
+
+		Delay_mS(PauseDelay);
 		PulseCount++;
-		Delay_mS(1);
 	}
-	//Запуск сигналов синхронизации для осциллографа
-	//OSC_SYNC_SIGNAL_START;
-	//
-	Delay_mS(5);
-	//OSC_SYNC_SIGNAL_STOP;
-	Delay_mS(1);
-	//OSC_SYNC_SIGNAL_START;
-	Delay_mS(4);
-
-	PulseCount = 0;
-
 	DUT_CLOSE;
-	//
-
 	Delay_mS(200);
 
 	//Считываем статусы блоков SCPC
@@ -925,7 +918,6 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 		Nid_Count++;
 		IWDG_Control();
 	}
-	//
 
 	//Проверяем все ли блоки SCPC сформировали заданный импульс тока
 	Nid_Count = 0;
@@ -944,17 +936,12 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 		Nid_Count++;
 		IWDG_Control();
 	}
-	//
 
 	//Utm measure
 	Utm_Measure();
-	//
 
-	//
 	if(DataTable[REG_DEV_STATE] != DS_Fault)
-	{
 		SetDeviceState(DS_PulseEnd);
-	}
 }
 //------------------------------------------------------------------------------
 
