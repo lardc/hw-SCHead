@@ -140,38 +140,45 @@ void UART_Config(void)
 //------------------------------------------------------------------------------
 void ADC_Init(void)
 {
-  RCC_ADC_Clk_EN(ADC_12_ClkEN);
-  ADC_Calibration(ADC1);
-  ADC_TrigConfig(ADC1, ADC12_TIM15_TRGO, RISE);
-  ADC_ChannelSeqLen(ADC1, 2);
-  ADC_ChannelSet_Sequence1_4(ADC1, 3, 1);
-  ADC_ChannelSet_Sequence1_4(ADC1, 4, 2);
-  ADC_DMAConfig(ADC1);
-  ADC_Enable(ADC1);
+	RCC_ADC_Clk_EN(ADC_12_ClkEN);
+
+	ADC_Calibration(ADC1);
+	ADC_Enable(ADC1);
+	ADC_TrigConfig(ADC1, ADC12_TIM15_TRGO, RISE);
+
+	ADC_ChannelSeqReset(ADC1);
+	ADC_ChannelSet_Sequence(ADC1, 3, 1);
+	ADC_ChannelSet_Sequence(ADC1, 4, 2);
+	ADC_ChannelSeqLen(ADC1, 2);
+
+	ADC_DMAConfig(ADC1);
+	ADC_SamplingStart(ADC1);
 }
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
 void Timer15_Config(void)
 {
-  TIM_Clock_En(TIM_15);
-  TIM_Config(TIM15, SYSCLK, TIMER15_uS);
-  TIM_MasterMode(TIM15, MMS_UPDATE);
+	TIM_Clock_En(TIM_15);
+	TIM_Config(TIM15, SYSCLK, TIMER15_uS);
+	TIM_MasterMode(TIM15, MMS_UPDATE);
 }
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
 void DMA_Config(void)
 {
-  DMA_Clk_Enable(DMA_ClkEN);
-  DMA_Reset(DMA1_Channel1);
-  DMA_Interrupt(DMA1_Channel1, DMA_TRANSFER_COMPLETE, 0, true);
-  DMA1ChannelX_DataConfig(DMA1_Channel1, (uint32_t)(&ADC_BUF[0]), (uint32_t)(&ADC1->DR), ADC_BUFF_LENGTH);
-  DMA1ChannelX_Config(DMA1_Channel1,DMA_MEM2MEM_DIS,DMA_LvlPriority_LOW,DMA_MSIZE_16BIT,DMA_PSIZE_16BIT,
-                      DMA_MINC_EN,false,DMA_CIRCMODE_EN,DMA_READ_FROM_PERIPH,DMA_CHANNEL_EN);
+	DMA_Clk_Enable(DMA1_ClkEN);
+	DMA_Reset(DMA1_Channel1);
+
+	DMAChannelX_DataConfig(DMA1_Channel1, (uint32_t)ADC_BUF, (uint32_t)(&ADC1->DR), ADC_BUFF_LENGTH);
+	DMAChannelX_Config(DMA1_Channel1, DMA_MEM2MEM_DIS, DMA_LvlPriority_LOW, DMA_MSIZE_16BIT, DMA_PSIZE_16BIT,
+			DMA_MINC_EN, DMA_PINC_DIS, DMA_CIRCMODE_EN, DMA_READ_FROM_PERIPH);
+
+	DMA_Interrupt(DMA1_Channel1, DMA_TRANSFER_COMPLETE, 0, true);
+	DMA_ChannelEnable(DMA1_Channel1, true);
 }
 //------------------------------------------------------------------------------
-
 
 //------------------------------------------------------------------------------
 void SetVectorTable()
