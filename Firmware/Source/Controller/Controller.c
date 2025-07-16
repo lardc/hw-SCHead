@@ -156,46 +156,34 @@ static Boolean CONTROL_DispatchAction(Int16U ActionID, pInt16U pUserError)
       break;
     }
 //-------------
-   case ACT_SC_PULSE_START:     //Команда запуска удароного тока
-    {
-      if(DataTable[REG_DEV_STATE]==DS_PulseConfigReady)
-      {
-        if((DataTable[REG_DUT_TYPE]==DIODE)||(DataTable[REG_DUT_TYPE]==THYRISTOR))
-        {
-          if(SECURITY_SENSOR)
-          {
-            SetDeviceState(DS_Fault);
-            SetDeviceFault(ERR_SECURITY);
-            break;
-          }
-          else
-          {
-			  //Если эмуляция SCPC включена
-			if(DataTable[REG_SCPC_EMULATION]==EMUL_SCPC_EN)
+		case ACT_SC_PULSE_START:     //Команда запуска удароного тока
+			if(DataTable[REG_DEV_STATE] == DS_PulseConfigReady)
 			{
-				SetDeviceState(DS_PulseEnd);
 				DEVPROFILE_ResetScopes(0);
 				DEVPROFILE_ResetEPReadState();
+
+				if((DataTable[REG_DUT_TYPE] == DIODE) || (DataTable[REG_DUT_TYPE] == THYRISTOR))
+				{
+					if(SECURITY_SENSOR)
+					{
+						SetDeviceState(DS_Fault);
+						SetDeviceFault(ERR_SECURITY);
+						break;
+					}
+					else
+					{
+						//Если эмуляция SCPC включена
+						SetDeviceState(DataTable[REG_SCPC_EMULATION] == EMUL_SCPC_EN ? DS_PulseEnd : DS_PulseStart);
+					}
+				}
+				else
+					//Команда заблокирована, введенное значение ударного тока не соответствует текущей конфигурации
+					*pUserError = ERR_OPERATION_BLOCKED;
 			}
 			else
-			  {
-				SetDeviceState(DS_PulseStart);
-			  }
-          }
-        }
-        else
-        {
-          //Команда заблокирована, введенное значение ударного тока не соответствует текущей конфигурации
-          *pUserError = ERR_OPERATION_BLOCKED;
-        }
-      }
-      else
-      {
-        //Команда заблокирована, т.к. установка не была сконфигурирована
-        *pUserError = ERR_DEVICE_NOT_READY;
-      }
-      break;
-    }
+				//Команда заблокирована, т.к. установка не была сконфигурирована
+				*pUserError = ERR_DEVICE_NOT_READY;
+			break;
 //-------------
   case ACT_SET_K_SHUNT_AMP:
     {
@@ -383,9 +371,7 @@ void CONTROL_Idle()
 	//Если состояние установки DS_PulseStart, то формируем импульс тока
 	if(DataTable[REG_DEV_STATE] == DS_PulseStart)
 	{
-		DEVPROFILE_ResetScopes(0);
 		SurgeCurrentProcess(&MASTER_DEVICE_CAN_Interface);
-		DEVPROFILE_ResetEPReadState();
 	}
 
 	//Если установка перешла в состояние DS_PulseEnd, то через время TIME_CHANGE_STATE
@@ -899,9 +885,17 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 		SCPC_SYNC_SIGNAL_START;
 		OSC_SYNC_SIGNAL_START;
 
-		//Задержка запуска формирования импульса для выхода
-		Delay_mS(DELAY_PULSE_START);
-		//
+		// Задержка запуска формирования импульса для выхода
+		// Оцифровка запускается на последнем импульсе
+		if(PulseCount == (DataTable[REG_PULSE_COUNT] - 1))
+		{
+			Delay_mS(9);
+			UI_Dut_MeasureStart();
+			Delay_mS(DataTable[REG_PULSE_DURATION] / 1000);
+		}
+		else
+			Delay_mS(DELAY_PULSE_START);
+
 		SCPC_SYNC_SIGNAL_STOP;
 		OSC_SYNC_SIGNAL_STOP;
 		PulseCount++;
@@ -909,8 +903,6 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 	}
 	//Запуск сигналов синхронизации для осциллографа
 	//OSC_SYNC_SIGNAL_START;
-	//
-	UI_Dut_MeasureStart();
 	//
 	Delay_mS(5);
 	//OSC_SYNC_SIGNAL_STOP;
