@@ -7,18 +7,16 @@
 
 // Include
 #include "stdinc.h"
-//
 #include "DataTable.h"
-#include "Global.h"
 
-#define PULSE_DURATION_MIN 				10000  // в мкс
-#define PULSE_DURATION_MAX 				20000  // в мкс
-#define PULSE_DURATION_DEF 				10000  // в мкс
+#define PULSE_PAUSE_TIME_MIN 			10000  // в мкс
+#define PULSE_PAUSE_TIME_MAX 			20000  // в мкс
+#define PULSE_PAUSE_TIME_DEF 			10000  // в мкс
 
 #define PULSE_COUNT_MIN					1
 #define PULSE_COUNT_MAX					3
+
 // Types
-//
 typedef struct __TableItemConstraint
 {
 	Int16U Min;
@@ -26,11 +24,8 @@ typedef struct __TableItemConstraint
 	Int16U Default;
 } TableItemConstraint;
 
-
 // Variables
-//
-extern const TableItemConstraint NVConstraint[DATA_TABLE_NV_SIZE];
-extern const TableItemConstraint VConstraint[DATA_TABLE_WP_START - DATA_TABLE_WR_START];
-
+extern const TableItemConstraint NVConstraint[];
+extern const TableItemConstraint VConstraint[];
 
 #endif // __CONSTRAINTS_H

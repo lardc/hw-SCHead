@@ -126,11 +126,6 @@
 #define EP16_Data_I		                2	                        // Оцифрованные данные прямого напряжения
 #define EP16_RawData					3							// Сырые оцифрованные данные
 
-#define EP_WRITE_COUNT		                1
-#define EP_COUNT			        3
-#define EP_SIZE                                 2100
-//
-
 //Fault
 //
 #define ERR_SCPC_NOT_ANS                        1                               //Блок SCPC не отвечает

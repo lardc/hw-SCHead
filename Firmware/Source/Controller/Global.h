@@ -5,11 +5,9 @@
 #ifndef __GLOBAL_H
 #define __GLOBAL_H
 
-
 // Include
 #include "stdinc.h"
 #include "SysConfig.h"
-
 
 //Def
 //------------------------------------------------
@@ -25,7 +23,12 @@
 #define MCU_FLASH_SIZE                          0x7FF                           //Размер FLASH памяти MCU для пользовательских задач
 #define FLASH_PAGE_SIZE							0x800							//Размер страницы flash для записи DT
 //------------------------------------------------
+#define EP_WRITE_COUNT		                	1
+#define EP_COUNT			        			3
+#define VALUES_x_SIZE                           3000
+#define ADC_BUFF_LENGTH							(VALUES_x_SIZE * 2)
 
+//------------------------------------------------
 
 //Значения калибровочных коэффициентов по умолчанию
 #define K_DUT_U_DEFAULT                         978                            //Калибровочный коэффициент по умолчанию по напряжению
@@ -54,15 +57,14 @@
 #define CHANNEL_2                               2                               //Канал измерения 2
 #define DIODE                                   1234                            //Тип прибора - диод
 #define THYRISTOR                               5678                            //Тип прибора - тиристор
-#define ADC_BUFF_LENGTH                         4500                            //Размер массива, в который сохраняются данные измерения формы тока и напряжения DUT
 #define TIME_CHANGE_STATE                       1000                            //Через 5 сек после импульса можно менять статус блока
 #define GLOBAL_TIMEOUT							60000							//Время такта работы установки
-#define WAIT_TIMEOUT_VALUE			 GLOBAL_TIMEOUT-TIME_CHANGE_STATE
+#define WAIT_TIMEOUT_VALUE						(GLOBAL_TIMEOUT-TIME_CHANGE_STATE)
 #define EXTREMUM_START_POINT                    2150                            //Точка начала экстремума в массиве оцифрованных значений тока и напряжения
 #define EXTREMUM_STOP_POINT                     2350                            //Точка конца экстремума в массиве оцифрованных значений тока и напряжения
 #define VOLTAGE_MEASURE_MAX                     4000                            //Максимальное измеряемое напряжение, мВ
 #define SCTU_NUM_MAX                            39                              //Максимально возможно число блоков SCPC в установке SCTU
-#define ADC_SC_LENGTH               (EXTREMUM_STOP_POINT-EXTREMUM_START_POINT)                           //Размер буфера для подсчета одинаковых сэмплов АЦП
+#define ADC_SC_LENGTH               			(EXTREMUM_STOP_POINT-EXTREMUM_START_POINT)	//Размер буфера для подсчета одинаковых сэмплов АЦП
 #define ADC_I_SAMPLE_THRESHOLD                  5                               //Порог количества сэмплов с одинаоковой амплитудой для определения амплитуды тока
 #define AVERAGE_POINTS                          100                             //Количество точек усреднения
 #define SCPC_PREPULSE_PAUSE						9		// Фиксированная задержка в SCPC перед формированием импульса, мс
@@ -73,6 +75,5 @@ extern Int64U LED_BlinkTimeCounter;
 extern volatile uint16_t ADC_BUF[ADC_BUFF_LENGTH];
 extern uint16_t ADC_SampleCount[ADC_SC_LENGTH];
 extern uint16_t ADC_SC_Shift;
-//
 
 #endif // __GLOBAL_H

@@ -22,7 +22,7 @@
 #define USART_FIFOlen                           32                              //Длина FIFO USART
 //-----------------------
 //Timer
-#define TIMER15_uS                              5                               //Период работы таймера 15
+#define TIMER15_uS                              50                              //Период работы таймера 15
 #define TIMER3_uS                               1000                            //Период работы таймера 3
 //-----------------------
 //CAN
@@ -62,8 +62,7 @@
 //-----------------------
 // Ключ для разблокировки записи в энергонезависимую память
 #define ENABLE_LOCKING				FALSE
-#define VALUES_x_SIZE				EP_SIZE
-#define	SCCI_TIMEOUT_TICKS  		        1000
+#define	SCCI_TIMEOUT_TICKS  		1000
 #define	BCCIM_TIMEOUT_TICKS			50				// Таймаут протоколоа мастер BCCI (в мс)
 //
 

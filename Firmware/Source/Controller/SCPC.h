@@ -90,7 +90,7 @@ struct SCPC_Data_Struct
   Int16U        Version;
   Int16U        NotAnsCounter;
 };
-extern struct SCPC_Data_Struct SCPC_Data[SCTU_NUM_MAX];
+extern struct SCPC_Data_Struct SCPC_Data[];
 //
 
 
