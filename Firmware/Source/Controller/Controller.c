@@ -25,6 +25,12 @@ typedef struct __VIEntity
 	Int16U Current;
 } VIEntity, *pVIEntity;
 
+typedef struct __VIEntityFloat
+{
+	float Voltage;
+	float Current;
+} VIEntityFloat, *pVIEntityFloat;
+
 // Переменные
 static Boolean CycleActive = FALSE;
 Int16U CONTROL_Values_U[VALUES_x_SIZE];
@@ -32,6 +38,7 @@ Int16U CONTROL_Values_I[VALUES_x_SIZE];
 Int16U CONTROL_Values_U_Counter = 0;
 Int16U CONTROL_Values_I_Counter = 0;
 volatile Int16U CONTROL_RawCounter = 0;
+VIEntityFloat SinglePulse[SINGLE_PULSE_MAX_TICKS];
 
 // Функции
 static Boolean CONTROL_DispatchAction(Int16U ActionID, pInt16U pUserError);

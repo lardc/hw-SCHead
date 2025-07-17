@@ -8,6 +8,7 @@
 // Include
 #include "stdinc.h"
 #include "SysConfig.h"
+#include "Constraints.h"
 
 //Def
 //------------------------------------------------
@@ -25,8 +26,9 @@
 //------------------------------------------------
 #define EP_WRITE_COUNT		                	1
 #define EP_COUNT			        			3
-#define VALUES_x_SIZE                           3000
+#define VALUES_x_SIZE                           2500
 #define ADC_BUFF_LENGTH							(VALUES_x_SIZE * 2)
+#define SINGLE_PULSE_MAX_TICKS					(PULSE_PAUSE_TIME_MAX / TIMER15_uS)
 
 //------------------------------------------------
 
