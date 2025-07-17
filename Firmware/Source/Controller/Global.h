@@ -62,11 +62,8 @@
 #define TIME_CHANGE_STATE                       1000                            //Через 5 сек после импульса можно менять статус блока
 #define GLOBAL_TIMEOUT							60000							//Время такта работы установки
 #define WAIT_TIMEOUT_VALUE						(GLOBAL_TIMEOUT-TIME_CHANGE_STATE)
-#define EXTREMUM_START_POINT                    2150                            //Точка начала экстремума в массиве оцифрованных значений тока и напряжения
-#define EXTREMUM_STOP_POINT                     2350                            //Точка конца экстремума в массиве оцифрованных значений тока и напряжения
 #define VOLTAGE_MEASURE_MAX                     4000                            //Максимальное измеряемое напряжение, мВ
 #define SCTU_NUM_MAX                            39                              //Максимально возможно число блоков SCPC в установке SCTU
-#define ADC_SC_LENGTH               			(EXTREMUM_STOP_POINT-EXTREMUM_START_POINT)	//Размер буфера для подсчета одинаковых сэмплов АЦП
 #define ADC_I_SAMPLE_THRESHOLD                  5                               //Порог количества сэмплов с одинаоковой амплитудой для определения амплитуды тока
 #define AVERAGE_POINTS                          100                             //Количество точек усреднения
 #define SCPC_PREPULSE_PAUSE						9		// Фиксированная задержка в SCPC перед формированием импульса, мс
@@ -75,7 +72,5 @@
 extern volatile Int64U CONTROL_TimeCounter;
 extern Int64U LED_BlinkTimeCounter;
 extern volatile uint16_t ADC_BUF[ADC_BUFF_LENGTH];
-extern uint16_t ADC_SampleCount[ADC_SC_LENGTH];
-extern uint16_t ADC_SC_Shift;
 
 #endif // __GLOBAL_H

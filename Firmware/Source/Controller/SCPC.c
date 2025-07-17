@@ -1,6 +1,7 @@
 ﻿#include "SCPC.h"
 
 #include "ZwNCAN.h"
+#include <string.h>
 
 // Переменные
 uint16_t SCPC_v20_Count = 0;
@@ -234,6 +235,9 @@ void SCPCFind(pBCCIM_Interface Interface)
 {
 	uint16_t Nid = DataTable[REG_SCPC0_ADR] == 65535 ? ADR_SCPC0 : DataTable[REG_SCPC0_ADR];
 	SCPC_v20_Count = 0;
+	DataTable[REG_TOTAL_SCPC] = 0;
+	// Обнуление хранилища
+	memset(SCPC_Data, 0, sizeof(SCPC_Data));
 	
 	// Ждем 1000 мС пока запустяться все блоки SCPC
 	uint64_t SCPC_WaitStart = CONTROL_TimeCounter + 1000;
@@ -262,7 +266,7 @@ void SCPCFind(pBCCIM_Interface Interface)
 			if(Version == SCPC_VERSION_20)
 				SCPC_v20_Count++;
 		}
-		
+
 		Nid++;
 		IWDG_Control();
 	}
