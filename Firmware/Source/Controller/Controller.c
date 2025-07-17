@@ -763,7 +763,7 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 	else
 		Nid_Count = 0;
 
-  while(PulseCount > 0)
+	while(PulseCount > 0)
 	{
 		switch(PulseCount)
 		{
@@ -773,17 +773,19 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 					if(SCPC_Data[i].Nid == DataTable[REG_SCPC_NID_SECOND_GROUP])
 						CalibratedNID = i;
 				}
-					break;
+				break;
+
 			case 3:
 				for(int i = 0; i < DataTable[REG_TOTAL_SCPC]; i++)
 				{
 					if(SCPC_Data[i].Nid == DataTable[REG_SCPC_NID_THIRD_GROUP])
 						CalibratedNID = i;
 				}
-					break;
+				break;
+
 			default:
-					CalibratedNID = 0;
-					break;
+				CalibratedNID = 0;
+				break;
 		}
 
 		while(CurrentSet > 0)
