@@ -35,8 +35,7 @@ typedef struct __VIEntityFloat
 static Boolean CycleActive = FALSE;
 Int16U CONTROL_Values_U[VALUES_x_SIZE];
 Int16U CONTROL_Values_I[VALUES_x_SIZE];
-Int16U CONTROL_Values_U_Counter = 0;
-Int16U CONTROL_Values_I_Counter = 0;
+Int16U CONTROL_Values_Counter = 0;
 volatile Int16U CONTROL_RawCounter = 0;
 VIEntityFloat SinglePulse[SINGLE_PULSE_MAX_TICKS];
 
@@ -50,7 +49,7 @@ void CONTROL_Init()
 	// Переменные для конфигурации EndPoint
 	Int16U EPIndexes[EP_COUNT] = {EP16_Data_U, EP16_Data_I, EP16_RawData};
 	Int16U EPSized[EP_COUNT] = {VALUES_x_SIZE, VALUES_x_SIZE, ADC_BUFF_LENGTH};
-	pInt16U EPCounters[EP_COUNT] = {(pInt16U)&CONTROL_Values_U_Counter, (pInt16U)&CONTROL_Values_I_Counter,
+	pInt16U EPCounters[EP_COUNT] = {(pInt16U)&CONTROL_Values_Counter, (pInt16U)&CONTROL_Values_Counter,
 			(pInt16U)&CONTROL_RawCounter};
 	pInt16U EPDatas[EP_COUNT] = {CONTROL_Values_U, CONTROL_Values_I, (pInt16U)ADC_BUF};
 
@@ -978,9 +977,15 @@ void Utm_Measure()
 	float U_Kfine = DataTable[REG_K_U_CAL] * 0.001f;
 	float U_Bfine = (Int16S)DataTable[REG_B_U_CAL];
 
+	// Расчёт размера актуального окна
+	// Число пауз и число импульсов с учётом ширины
+	Int16U ActualDataSize = ((Int32U)DataTable[REG_PULSE_DURATION] * DataTable[REG_PULSE_COUNT]
+			+ (Int32U)DataTable[REG_PAUSE_DURATION] * (DataTable[REG_PULSE_COUNT] - 1)) / TIMER15_uS;
+	ActualDataSize = (ActualDataSize > VALUES_x_SIZE) ? VALUES_x_SIZE : ActualDataSize;
+
 	// Пересчёт значений для EP
 	pVIEntity rawVI = (pVIEntity)ADC_BUF;
-	for(int i = 0; i < VALUES_x_SIZE; i++)
+	for(int i = 0; i < ActualDataSize; i++)
 	{
 		// Напряжение
 		float U = U_K * rawVI[i].Voltage - U_Offset;
@@ -991,8 +996,7 @@ void Utm_Measure()
 		float I = K_ShuntAmplifier * I_K * rawVI[i].Current - I_Offset;
 		CONTROL_Values_I[i] = I > 0 ? (Int16U)I : 0;
 	}
-	CONTROL_Values_U_Counter = VALUES_x_SIZE;
-	CONTROL_Values_I_Counter = VALUES_x_SIZE;
+	CONTROL_Values_Counter = ActualDataSize;
 
 	/*
 	 * Реализовать проверку
