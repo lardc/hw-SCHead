@@ -420,10 +420,10 @@ void CONTROL_Idle()
 	//
 
 	//Если задан ток больше максимально возможного, то заданное значение уменьшиться до возможного
-	uint32_t CurrentMax = (DataTable[REG_SC_MAX_H] << 16);
+	uint32_t CurrentMax = (Int32U)DataTable[REG_SC_MAX_H] << 16;
 	CurrentMax |= DataTable[REG_SC_MAX_L];
 
-	uint32_t CurrentSet = (DataTable[REG_SC_VALUE_H] << 16);
+	uint32_t CurrentSet = (Int32U)DataTable[REG_SC_VALUE_H] << 16;
 	CurrentSet |= DataTable[REG_SC_VALUE_L];
 
 	if(CurrentSet > CurrentMax)
@@ -498,7 +498,7 @@ void SCTU_Config(pBCCIM_Interface Interface)
 	//----------Конфигурация SCHuntAmplifier-------------
 
 	//Вычисление коэффициента усиления
-	uint32_t CurrentSet = (DataTable[REG_SC_VALUE_H] << 16);
+	uint32_t CurrentSet = (Int32U)DataTable[REG_SC_VALUE_H] << 16;
 	CurrentSet |= DataTable[REG_SC_VALUE_L];
 
 	float Ushunt_mV = ((float)DataTable[REG_R_SHUNT]) / 1000 * CurrentSet;
@@ -703,7 +703,7 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 	Int16U CalibratedNID = 0;
 
 	//Распределяем значение ударного тока по блокам SCPC
-	CurrentSet = (DataTable[REG_SC_VALUE_H] << 16);
+	CurrentSet = (Int32U)DataTable[REG_SC_VALUE_H] << 16;
 	CurrentSet |= DataTable[REG_SC_VALUE_L];
 	CurrentSetTemp = CurrentSet; // Сохраняем значение для цикла, если импульсов >1
 
@@ -976,18 +976,38 @@ void Utm_Measure()
 			+ (Int32U)DataTable[REG_PAUSE_DURATION] * (DataTable[REG_PULSE_COUNT] - 1)) / TIMER15_uS + SAMPLING_TAIL;
 	ActualDataSize = (ActualDataSize > VALUES_x_SIZE) ? VALUES_x_SIZE : ActualDataSize;
 
-	// Пересчёт значений для EP
+	// Определение необходимости масштабировать ток
+	Int32U CurrentSet = ((Int32U)DataTable[REG_SC_VALUE_H] << 16) | DataTable[REG_SC_VALUE_L];
+	bool UseCurrentScale = CurrentSet > SCALE_CURRENT_VALUE;
+
+	// Пересчёт значений в исходном массиве и копирование в EP
 	pVIEntity rawVI = (pVIEntity)ADC_BUF;
 	for(int i = 0; i < ActualDataSize; i++)
 	{
 		// Напряжение
 		float U = U_K * rawVI[i].Voltage - U_Offset;
 		U = U * U_Kfine + U_Bfine;
-		CONTROL_Values_U[i] = U > 0 ? (Int16U)U : 0;
+
+		rawVI[i].Voltage = U > 0 ? (Int16U)U : 0;
+		CONTROL_Values_U[i] = rawVI[i].Voltage;
 
 		// Ток
 		float I = K_ShuntAmplifier * I_K * rawVI[i].Current - I_Offset;
-		CONTROL_Values_I[i] = I > 0 ? (Int16U)I : 0;
+		Int32U Iint = I > 0 ? (Int32U)I : 0;
+
+		if(UseCurrentScale)
+		{
+			// В исходный массив сохраняем со сдвигом на 1бит, чтобы исключить переполнение
+			rawVI[i].Current = Iint >> 1;
+
+			// а в EP деление на 10
+			CONTROL_Values_I[i] = Iint / 10;
+		}
+		else
+		{
+			rawVI[i].Current = Iint;
+			CONTROL_Values_I[i] = Iint;
+		}
 	}
 	CONTROL_Values_Counter = ActualDataSize;
 
