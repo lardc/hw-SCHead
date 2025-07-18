@@ -1101,7 +1101,7 @@ void CONTROL_FindExtremum(int PulseNumber, bool UseCurrentScale, pInt32U Voltage
 		AvgCurrent += rawVI[StartIndex + i].Current;
 	}
 	*Voltage = AvgVoltage / EXTREMUM_POINTS;
-	*Current = AvgCurrent / EXTREMUM_POINTS;
+	*Current = AvgCurrent * (UseCurrentScale ? 2 : 1) / EXTREMUM_POINTS;
 }
 //------------------------------------------------------------------------------
 
