@@ -321,3 +321,14 @@ bool SCPC_GetInfo()
 	return 1;
 }
 // ------------------------------------------------------------------------------
+
+Int16U SCPC_GetCalibratedIndex(uint16_t Nid)
+{
+	for(int i = 0; i < DataTable[REG_TOTAL_SCPC]; i++)
+	{
+		if(SCPC_Data[i].Nid == Nid)
+			return i;
+	}
+	return 0;
+}
+// -----------------------------------------------------------------------------

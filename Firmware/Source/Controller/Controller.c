@@ -756,35 +756,25 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 		SetDeviceState(DS_PulseConfigReady);
 		return;
 	}
-	//
 
-	if(DataTable[REG_TOTAL_SCPC] > 1)
-		Nid_Count = 1; //Всем учавствующим блокам, кроме 0-го прсваиваем максимальную амплитуду
-	else
-		Nid_Count = 0;
+	Int16U Pulse1CalibratedIndex = 0;
+	Int16U Pulse2CalibratedIndex = SCPC_GetCalibratedIndex(DataTable[REG_SCPC_NID_SECOND_GROUP]);
+	Int16U Pulse3CalibratedIndex = SCPC_GetCalibratedIndex(DataTable[REG_SCPC_NID_THIRD_GROUP]);
 
+	Nid_Count = 0;
 	while(PulseCount > 0)
 	{
+		// Определение индекса откалиброванного блока для текущей итерации
 		switch(PulseCount)
 		{
-			case 2:
-				for(int i = 0; i < DataTable[REG_TOTAL_SCPC]; i++)
-				{
-					if(SCPC_Data[i].Nid == DataTable[REG_SCPC_NID_SECOND_GROUP])
-						CalibratedNID = i;
-				}
-				break;
-
 			case 3:
-				for(int i = 0; i < DataTable[REG_TOTAL_SCPC]; i++)
-				{
-					if(SCPC_Data[i].Nid == DataTable[REG_SCPC_NID_THIRD_GROUP])
-						CalibratedNID = i;
-				}
+				CalibratedNID = Pulse3CalibratedIndex;
 				break;
-
+			case 2:
+				CalibratedNID = Pulse2CalibratedIndex;
+				break;
 			default:
-				CalibratedNID = 0;
+				CalibratedNID = Pulse1CalibratedIndex;
 				break;
 		}
 
@@ -792,8 +782,34 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 		{
 			DEVPROFILE_ProcessRequests();
 
-			if(Nid_Count == CalibratedNID)
-				Nid_Count++;
+			// Условие пропуска блоков в зависимости от итогового количества импульсов
+			switch(DataTable[REG_PULSE_COUNT])
+			{
+				case 1:
+					if(Nid_Count == Pulse1CalibratedIndex)
+					{
+						Nid_Count++;
+						continue;
+					}
+					break;
+
+				case 2:
+					if(Nid_Count == Pulse1CalibratedIndex || Nid_Count == Pulse2CalibratedIndex)
+					{
+						Nid_Count++;
+						continue;
+					}
+					break;
+
+				case 3:
+					if(Nid_Count == Pulse1CalibratedIndex || Nid_Count == Pulse2CalibratedIndex
+							|| Nid_Count == Pulse3CalibratedIndex)
+					{
+						Nid_Count++;
+						continue;
+					}
+					break;
+			}
 
 			if(CurrentSet > SCPC_SC_SINE_MAX)
 			{

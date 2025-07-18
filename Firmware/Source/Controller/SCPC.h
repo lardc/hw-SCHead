@@ -91,13 +91,9 @@ struct SCPC_Data_Struct
   Int16U        NotAnsCounter;
 };
 extern struct SCPC_Data_Struct SCPC_Data[];
-//
-
 
 //Переменные
 extern uint16_t SCPC_v20_Count;
-//
-
 
 //Функции
 bool SCPC_CheckStatus(Int16U NodeID, Int16U Status);
@@ -110,7 +106,6 @@ void SCPC_Save_Nid_Version(uint16_t Nid, uint16_t Version);
 void SCPC_CapChargeStart(pBCCIM_Interface Interface);
 void SCPCFind(pBCCIM_Interface Interface);
 bool SCPC_GetInfo(void);
-//
-
+Int16U SCPC_GetCalibratedIndex(uint16_t Nid);
 
 #endif // __SCPC_H
