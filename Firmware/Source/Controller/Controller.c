@@ -25,19 +25,12 @@ typedef struct __VIEntity
 	Int16U Current;
 } VIEntity, *pVIEntity;
 
-typedef struct __VIEntityFloat
-{
-	float Voltage;
-	float Current;
-} VIEntityFloat, *pVIEntityFloat;
-
 // Переменные
 static Boolean CycleActive = FALSE;
 Int16U CONTROL_Values_U[VALUES_x_SIZE];
 Int16U CONTROL_Values_I[VALUES_x_SIZE];
 Int16U CONTROL_Values_Counter = 0;
 volatile Int16U CONTROL_RawCounter = 0;
-VIEntityFloat SinglePulse[SINGLE_PULSE_MAX_TICKS];
 
 // Функции
 static Boolean CONTROL_DispatchAction(Int16U ActionID, pInt16U pUserError);
@@ -980,7 +973,7 @@ void Utm_Measure()
 	// Расчёт размера актуального окна
 	// Число пауз и число импульсов с учётом ширины
 	Int16U ActualDataSize = ((Int32U)DataTable[REG_PULSE_DURATION] * DataTable[REG_PULSE_COUNT]
-			+ (Int32U)DataTable[REG_PAUSE_DURATION] * (DataTable[REG_PULSE_COUNT] - 1)) / TIMER15_uS;
+			+ (Int32U)DataTable[REG_PAUSE_DURATION] * (DataTable[REG_PULSE_COUNT] - 1)) / TIMER15_uS + SAMPLING_TAIL;
 	ActualDataSize = (ActualDataSize > VALUES_x_SIZE) ? VALUES_x_SIZE : ActualDataSize;
 
 	// Пересчёт значений для EP

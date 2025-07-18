@@ -26,10 +26,10 @@
 //------------------------------------------------
 #define EP_WRITE_COUNT		                	1
 #define EP_COUNT			        			3
-#define VALUES_x_SIZE                           2500
-#define ADC_BUFF_LENGTH							(VALUES_x_SIZE * 2)
-#define SINGLE_PULSE_MAX_TICKS					(PULSE_PAUSE_TIME_MAX / TIMER15_uS)
 
+#define SAMPLING_TAIL							100
+#define VALUES_x_SIZE							(2500 + SAMPLING_TAIL)
+#define ADC_BUFF_LENGTH							(VALUES_x_SIZE * 2)
 //------------------------------------------------
 
 //Значения калибровочных коэффициентов по умолчанию
