@@ -800,42 +800,42 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 				break;
 		}
 
-		while(CurrentSet > 0 && Nid_Count < DataTable[REG_SCTU_SCPC_NUM])
+		while(CurrentSet > 0)
 		{
 			DEVPROFILE_ProcessRequests();
 			Int16U CellIndex = SCPC_GetIndex(Nid_Count);
 
-			// Условие пропуска блоков в зависимости от итогового количества импульсов
-			switch(DataTable[REG_PULSE_COUNT])
-			{
-				case 1:
-					if(CellIndex == Pulse1CalibratedIndex)
-					{
-						Nid_Count++;
-						continue;
-					}
-					break;
-
-				case 2:
-					if(CellIndex == Pulse1CalibratedIndex || CellIndex == Pulse2CalibratedIndex)
-					{
-						Nid_Count++;
-						continue;
-					}
-					break;
-
-				case 3:
-					if(CellIndex == Pulse1CalibratedIndex || CellIndex == Pulse2CalibratedIndex
-							|| CellIndex == Pulse3CalibratedIndex)
-					{
-						Nid_Count++;
-						continue;
-					}
-					break;
-			}
-
 			if(CurrentSet > SCPC_SC_SINE_MAX)
 			{
+				// Условие пропуска блоков в зависимости от итогового количества импульсов
+				switch(DataTable[REG_PULSE_COUNT])
+				{
+					case 1:
+						if(CellIndex == Pulse1CalibratedIndex)
+						{
+							Nid_Count++;
+							continue;
+						}
+						break;
+
+					case 2:
+						if(CellIndex == Pulse1CalibratedIndex || CellIndex == Pulse2CalibratedIndex)
+						{
+							Nid_Count++;
+							continue;
+						}
+						break;
+
+					case 3:
+						if(CellIndex == Pulse1CalibratedIndex || CellIndex == Pulse2CalibratedIndex
+								|| CellIndex == Pulse3CalibratedIndex)
+						{
+							Nid_Count++;
+							continue;
+						}
+						break;
+				}
+
 				SCPC_Read_Data(Interface, SCPC_Data[CellIndex].Nid, true);
 
 				if(SCPC_Data[CellIndex].DevState == SCPC_Ready)
