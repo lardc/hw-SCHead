@@ -27,7 +27,7 @@ typedef struct __VIEntity
 } VIEntity, *pVIEntity;
 
 // Переменные
-static Boolean CycleActive = FALSE;
+static Boolean CycleActive = FALSE, SeedInit = false;
 Int16U CONTROL_Values_U[VALUES_x_SIZE];
 Int16U CONTROL_Values_I[VALUES_x_SIZE];
 Int16U CONTROL_Values_Counter = 0;
@@ -782,6 +782,14 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 	Int16U Pulse2CalibratedIndex = SCPC_GetCalibratedIndex(DataTable[REG_SCPC_NID_SECOND_GROUP]);
 	Int16U Pulse3CalibratedIndex = SCPC_GetCalibratedIndex(DataTable[REG_SCPC_NID_THIRD_GROUP]);
 
+	// Рандомизация массива индексов
+	if(!SeedInit)
+	{
+		srand(CONTROL_TimeCounter & 0xFFFFFFFF);
+		SeedInit = true;
+	}
+	SCPC_ShuffleIndexArray();
+
 	Nid_Count = 0;
 	while(PulseCount > 0)
 	{
@@ -799,15 +807,16 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 				break;
 		}
 
-		while(CurrentSet > 0)
+		while(CurrentSet > 0 && Nid_Count < DataTable[REG_SCTU_SCPC_NUM])
 		{
 			DEVPROFILE_ProcessRequests();
+			Int16U CellIndex = SCPC_GetIndex(Nid_Count);
 
 			// Условие пропуска блоков в зависимости от итогового количества импульсов
 			switch(DataTable[REG_PULSE_COUNT])
 			{
 				case 1:
-					if(Nid_Count == Pulse1CalibratedIndex)
+					if(CellIndex == Pulse1CalibratedIndex)
 					{
 						Nid_Count++;
 						continue;
@@ -815,7 +824,7 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 					break;
 
 				case 2:
-					if(Nid_Count == Pulse1CalibratedIndex || Nid_Count == Pulse2CalibratedIndex)
+					if(CellIndex == Pulse1CalibratedIndex || CellIndex == Pulse2CalibratedIndex)
 					{
 						Nid_Count++;
 						continue;
@@ -823,8 +832,8 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 					break;
 
 				case 3:
-					if(Nid_Count == Pulse1CalibratedIndex || Nid_Count == Pulse2CalibratedIndex
-							|| Nid_Count == Pulse3CalibratedIndex)
+					if(CellIndex == Pulse1CalibratedIndex || CellIndex == Pulse2CalibratedIndex
+							|| CellIndex == Pulse3CalibratedIndex)
 					{
 						Nid_Count++;
 						continue;
@@ -834,21 +843,21 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 
 			if(CurrentSet > SCPC_SC_SINE_MAX)
 			{
-				SCPC_Read_Data(Interface, SCPC_Data[Nid_Count].Nid, true);
+				SCPC_Read_Data(Interface, SCPC_Data[CellIndex].Nid, true);
 
-				if(SCPC_Data[Nid_Count].DevState == SCPC_Ready)
+				if(SCPC_Data[CellIndex].DevState == SCPC_Ready)
 				{
-					SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_WAVEFORM_TYPE,
+					SCPC_WriteData(Interface, SCPC_Data[CellIndex].Nid, REG_SCPC_WAVEFORM_TYPE,
 							DataTable[REG_WAVEFORM_TYPE]);
-					SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_SC_PULSE_VALUE, SCPC_SC_SINE_MAX);
-					SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_PULSE_COUNT, PulseCount);
-					SCPC_Command(Interface, SCPC_Data[Nid_Count].Nid, ACT_SCPC_SC_PULSE_CONFIG);
+					SCPC_WriteData(Interface, SCPC_Data[CellIndex].Nid, REG_SCPC_SC_PULSE_VALUE, SCPC_SC_SINE_MAX);
+					SCPC_WriteData(Interface, SCPC_Data[CellIndex].Nid, REG_SCPC_PULSE_COUNT, PulseCount);
+					SCPC_Command(Interface, SCPC_Data[CellIndex].Nid, ACT_SCPC_SC_PULSE_CONFIG);
 
 					//Ждем паузу, пока блок выполняет процесс согласно заданной команде
 					//Delay_mS(10);
 				}
 
-				if(SCPC_Data[Nid_Count].DevState == SCPC_PulseConfigReady)
+				if(SCPC_Data[CellIndex].DevState == SCPC_PulseConfigReady)
 				{
 					CurrentSet -= SCPC_SC_SINE_MAX;
 					Nid_Count++;

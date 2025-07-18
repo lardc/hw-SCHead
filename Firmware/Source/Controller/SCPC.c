@@ -2,12 +2,14 @@
 
 #include "ZwNCAN.h"
 #include <string.h>
+#include <stdlib.h>
 
 // Переменные
 uint16_t SCPC_v20_Count = 0;
 
 // Структуры
 struct SCPC_Data_Struct SCPC_Data[SCTU_NUM_MAX];
+uint16_t SCPCNidRandomize[SCTU_NUM_MAX];
 
 // ------------------------------------------------------------------------------
 bool SCPC_CheckStatus(Int16U NodeID, Int16U Status)
@@ -277,6 +279,10 @@ void SCPCFind(pBCCIM_Interface Interface, bool ResetToNone)
 		DataTable[REG_WARNING] = WARNING_SCPC_NOT_FIND;
 	}
 	
+	// Сброс массива рандомизации
+	for(int i = 0; i < DataTable[REG_TOTAL_SCPC]; i++)
+		SCPCNidRandomize[i] = i;
+
 	// Переводим блоки SCPC в состояние DS_None
 	if(ResetToNone)
 	{
@@ -333,5 +339,30 @@ Int16U SCPC_GetCalibratedIndex(uint16_t Nid)
 			return i;
 	}
 	return 0;
+}
+// -----------------------------------------------------------------------------
+
+void SCPC_ShuffleIndexArray()
+{
+	if(!DataTable[REG_RANDOMIZE_CELLS])
+		return;
+
+	// Алгоритм Фишера-Йетса для перемешивания массива
+	for(int i = DataTable[REG_TOTAL_SCPC] - 1; i > 0; i--)
+	{
+		// Генерируем случайный индекс от 0 до i
+		int j = rand() % (i + 1);
+
+		// Меняем местами элементы array[i] и array[j]
+		uint16_t temp = SCPCNidRandomize[i];
+		SCPCNidRandomize[i] = SCPCNidRandomize[j];
+		SCPCNidRandomize[j] = temp;
+	}
+}
+// -----------------------------------------------------------------------------
+
+Int16U SCPC_GetIndex(Int16U InitialIndex)
+{
+	return DataTable[REG_RANDOMIZE_CELLS] ? SCPCNidRandomize[InitialIndex] : InitialIndex;
 }
 // -----------------------------------------------------------------------------

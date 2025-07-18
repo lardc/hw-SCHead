@@ -107,5 +107,7 @@ void SCPC_CapChargeStart(pBCCIM_Interface Interface);
 void SCPCFind(pBCCIM_Interface Interface, bool ResetToNone);
 bool SCPC_GetInfo(void);
 Int16U SCPC_GetCalibratedIndex(uint16_t Nid);
+void SCPC_ShuffleIndexArray();
+Int16U SCPC_GetIndex(Int16U InitialIndex);
 
 #endif // __SCPC_H
