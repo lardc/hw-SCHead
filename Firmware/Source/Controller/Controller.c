@@ -493,14 +493,13 @@ void SCTU_Config(pBCCIM_Interface Interface)
 		DataTable[REG_FAULT_REASON] = ERR_WAVEFORM_TYPE;
 		return;
 	}
-	//
 
-	//Всем блокам присваиваем значение ударного тока равным нулю и устанавливаем время пульсации
+	// Всем блокам присваиваем значение тока равным нулю
 	Nid_Count = 0;
 	while(Nid_Count < DataTable[REG_TOTAL_SCPC])
 	{
 		SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_SC_PULSE_VALUE, 0);
-		SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_PULSE_DURATION, DataTable[REG_PULSE_DURATION]);
+		SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_PULSE_DURATION, 1);
 		SCPC_Read_Data(Interface, SCPC_Data[Nid_Count].Nid, true);
 		if(SCPC_Data[Nid_Count].SC_PulseValue == 0)
 		{
@@ -510,7 +509,6 @@ void SCTU_Config(pBCCIM_Interface Interface)
 
 		DEVPROFILE_ProcessRequests();
 	}
-	//
 
 	//Выбираем нужный канал измерения
 	MeasureChannelSet(DataTable[REG_CHANNEL], false);
