@@ -113,6 +113,12 @@
 #define REG_INFO_SCPC_DEV_PROBLEM               112                             //Значение Problem, интересующего блока
 #define REG_INFO_K_SHUNT_AMP                    113                             //Текущее значение коэффициента усиления SCShuntAmplifier
 //
+#define REG_DUT_U_PULSE2						114								// Измеренное значение прямого напряжения, импульс 2, мВ
+#define REG_DUT_I_L_PULSE2						115								// Измеренное значение ударного тока, импульс 2, А (младшая часть)
+#define REG_DUT_I_H_PULSE2						116								// Измеренное значение ударного тока, импульс 2, А (старшая часть)
+#define REG_DUT_U_PULSE3						117								// Измеренное значение прямого напряжения, импульс 3, мВ
+#define REG_DUT_I_L_PULSE3						118								// Измеренное значение ударного тока, импульс 3, А (младшая часть)
+#define REG_DUT_I_H_PULSE3						119								// Измеренное значение ударного тока, импульс 3, А (старшая часть)
 
 #define REG_FWINFO_SLAVE_NID			256	// Device CAN slave node ID
 #define REG_FWINFO_MASTER_NID			257	// Device CAN master node ID (if presented)

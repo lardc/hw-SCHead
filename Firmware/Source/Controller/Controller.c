@@ -35,6 +35,7 @@ volatile Int16U CONTROL_RawCounter = 0;
 // Функции
 static Boolean CONTROL_DispatchAction(Int16U ActionID, pInt16U pUserError);
 void NFLASH_WriteDTShifted(uint32_t EPROMAddress, uint16_t* Buffer, uint16_t BufferSize);
+void CONTROL_ResetResults();
 
 //------------------------------------------------------------------------------
 void CONTROL_Init()
@@ -68,7 +69,25 @@ void CONTROL_Init()
 }
 // -----------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
+void CONTROL_ResetResults()
+{
+	DEVPROFILE_ResetScopes(0);
+	DEVPROFILE_ResetEPReadState();
+
+	DataTable[REG_DUT_U] = 0;
+	DataTable[REG_DUT_I_L] = 0;
+	DataTable[REG_DUT_I_H] = 0;
+
+	DataTable[REG_DUT_U_PULSE2] = 0;
+	DataTable[REG_DUT_I_L_PULSE2] = 0;
+	DataTable[REG_DUT_I_H_PULSE2] = 0;
+
+	DataTable[REG_DUT_U_PULSE3] = 0;
+	DataTable[REG_DUT_I_L_PULSE3] = 0;
+	DataTable[REG_DUT_I_H_PULSE3] = 0;
+}
+// -----------------------------------------------------------------------------
+
 static Boolean CONTROL_DispatchAction(Int16U ActionID, pInt16U pUserError)
 {
   *pUserError = ERR_NONE;
@@ -159,8 +178,7 @@ static Boolean CONTROL_DispatchAction(Int16U ActionID, pInt16U pUserError)
 		case ACT_SC_PULSE_START:     //Команда запуска удароного тока
 			if(DataTable[REG_DEV_STATE] == DS_PulseConfigReady)
 			{
-				DEVPROFILE_ResetScopes(0);
-				DEVPROFILE_ResetEPReadState();
+				CONTROL_ResetResults();
 
 				if((DataTable[REG_DUT_TYPE] == DIODE) || (DataTable[REG_DUT_TYPE] == THYRISTOR))
 				{
