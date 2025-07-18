@@ -715,13 +715,8 @@ void SCTU_PulseTrapezeConfig(pBCCIM_Interface Interface)
 //------------------------------------------------------------------------------
 void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 {
-	static uint16_t Nid_Count = 0;
-	static float SC_Temp = 0;
-	static long int CurrentSet = 0;
-	float SC_K_Set, SC_B_Set;
-	Int16U PulseCount = DataTable[REG_PULSE_COUNT];
-	Int32U CurrentSetTemp = 0;
-	Int16U CalibratedNID = 0;
+	Int16U PulseCount = DataTable[REG_PULSE_COUNT], CalibratedNID = 0, Nid_Count = 0;
+	Int32U CurrentSet = 0, CurrentSetTemp = 0;
 
 	//Распределяем значение ударного тока по блокам SCPC
 	CurrentSet = (Int32U)DataTable[REG_SC_VALUE_H] << 16;
@@ -729,15 +724,13 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 	CurrentSetTemp = CurrentSet; // Сохраняем значение для цикла, если импульсов >1
 
 	//Вводим поправки к заданию тока, если значение ударного тока <= UTM_I_MAX
-	SC_K_Set = 1;
-	SC_B_Set = 0;
-
+	float SC_K_Set = 1.0f;
+	float SC_B_Set = 0.0f;
 	if(CurrentSet <= UTM_I_MAX)
 	{
 		SC_K_Set = (float)((Int16S)DataTable[REG_K_SC_SET]) / 1000;
 		SC_B_Set = (Int16S)DataTable[REG_B_SC_SET];
 	}
-	//
 
 	//Проверяем не было ли указания сконфигурировать только один блок
 	if(DataTable[REG_NID_SCPC_CONFIG]!=0)
@@ -870,11 +863,8 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 
 				if(SCPC_Data[CalibratedNID].DevState == SCPC_Ready)
 				{
-					SC_Temp = SC_K_Set * CurrentSet + ((Int16S)SC_B_Set); //Калибровка погрешности задания тока
-					if(SC_Temp < 0)
-					{
-						SC_Temp = 1;
-					}
+					float SC_Temp = SC_K_Set * CurrentSet + SC_B_Set; //Калибровка погрешности задания тока
+					SC_Temp = (SC_Temp < 1) ? 1 : SC_Temp;
 
 					SCPC_WriteData(Interface, SCPC_Data[CalibratedNID].Nid, REG_SCPC_WAVEFORM_TYPE, DataTable[REG_WAVEFORM_TYPE]);
 					SCPC_WriteData(Interface, SCPC_Data[CalibratedNID].Nid, REG_SCPC_SC_PULSE_VALUE, (uint16_t)SC_Temp);
