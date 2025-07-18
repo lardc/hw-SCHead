@@ -67,7 +67,7 @@ void CONTROL_Init()
 	DEVPROFILE_ResetControlSection();
 
 	//Определение nid блоков, которые подключены
-	SCPCFind(&MASTER_DEVICE_CAN_Interface);
+	SCPCFind(&MASTER_DEVICE_CAN_Interface, true);
 	IWDG_Control();
 }
 // -----------------------------------------------------------------------------
@@ -243,7 +243,7 @@ static Boolean CONTROL_DispatchAction(Int16U ActionID, pInt16U pUserError)
    case ACT_SCPC_FIND:
      {
        //Определение nid блоков, которые подключены
-       SCPCFind(&MASTER_DEVICE_CAN_Interface);
+       SCPCFind(&MASTER_DEVICE_CAN_Interface, false);
        break;
      }
 //-------------

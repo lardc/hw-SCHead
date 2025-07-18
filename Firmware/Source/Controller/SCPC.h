@@ -104,7 +104,7 @@ void SCPC_Read_Data(pBCCIM_Interface Interface, uint16_t SCPC_id, bool ErrorCtrl
 void SCPC_Command(pBCCIM_Interface Interface, uint16_t SCPC_id, uint16_t Command);
 void SCPC_Save_Nid_Version(uint16_t Nid, uint16_t Version);
 void SCPC_CapChargeStart(pBCCIM_Interface Interface);
-void SCPCFind(pBCCIM_Interface Interface);
+void SCPCFind(pBCCIM_Interface Interface, bool ResetToNone);
 bool SCPC_GetInfo(void);
 Int16U SCPC_GetCalibratedIndex(uint16_t Nid);
 

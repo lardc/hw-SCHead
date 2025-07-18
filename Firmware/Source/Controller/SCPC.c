@@ -231,7 +231,7 @@ void SCPC_CapChargeStart(pBCCIM_Interface Interface)
 }
 // -----------------------------------------------------------------------------
 
-void SCPCFind(pBCCIM_Interface Interface)
+void SCPCFind(pBCCIM_Interface Interface, bool ResetToNone)
 {
 	uint16_t Nid = DataTable[REG_SCPC0_ADR] == 65535 ? ADR_SCPC0 : DataTable[REG_SCPC0_ADR];
 	SCPC_v20_Count = 0;
@@ -278,16 +278,19 @@ void SCPCFind(pBCCIM_Interface Interface)
 	}
 	
 	// Переводим блоки SCPC в состояние DS_None
-	uint8_t Nid_Count = 0;
-	while(Nid_Count < DataTable[REG_TOTAL_SCPC])
+	if(ResetToNone)
 	{
-		SCPC_Command(Interface, SCPC_Data[Nid_Count].Nid, ACT_SCPC_DS_NONE);
-		SCPC_Read_Data(Interface, SCPC_Data[Nid_Count].Nid, true);
-		if(SCPC_CheckStatus(Nid_Count, SCPC_None))
+		uint8_t Nid_Count = 0;
+		while(Nid_Count < DataTable[REG_TOTAL_SCPC])
 		{
-			Nid_Count++;
+			SCPC_Command(Interface, SCPC_Data[Nid_Count].Nid, ACT_SCPC_DS_NONE);
+			SCPC_Read_Data(Interface, SCPC_Data[Nid_Count].Nid, true);
+			if(SCPC_CheckStatus(Nid_Count, SCPC_None))
+			{
+				Nid_Count++;
+			}
+			IWDG_Control();
 		}
-		IWDG_Control();
 	}
 }
 // -----------------------------------------------------------------------------
