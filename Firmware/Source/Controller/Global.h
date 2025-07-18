@@ -31,6 +31,7 @@
 #define VALUES_x_SIZE							(2500 + SAMPLING_TAIL)
 #define ADC_BUFF_LENGTH							(VALUES_x_SIZE * 2)
 #define SCALE_CURRENT_VALUE						50000							// Порог тока для масштабирования данных
+#define EXTREMUM_POINTS							5								// Число точек усреднения экстремума
 //------------------------------------------------
 
 //Значения калибровочных коэффициентов по умолчанию

@@ -17,6 +17,7 @@
 #include "ZwNFlash.h"
 #include "ZwADC.h"
 #include "Global.h"
+#include "stdlib.h"
 
 // Структура для работы с массивом результата
 typedef struct __VIEntity
@@ -36,6 +37,8 @@ volatile Int16U CONTROL_RawCounter = 0;
 static Boolean CONTROL_DispatchAction(Int16U ActionID, pInt16U pUserError);
 void NFLASH_WriteDTShifted(uint32_t EPROMAddress, uint16_t* Buffer, uint16_t BufferSize);
 void CONTROL_ResetResults();
+void CONTROL_FindExtremum(int PulseNumber, bool UseCurrentScale, pInt32U Voltage, pInt32U Current);
+int CONTROL_SortFunction(const void *A, const void *B);
 
 //------------------------------------------------------------------------------
 void CONTROL_Init()
@@ -47,7 +50,7 @@ void CONTROL_Init()
 			(pInt16U)&CONTROL_RawCounter};
 	pInt16U EPDatas[EP_COUNT] = {CONTROL_Values_U, CONTROL_Values_I, (pInt16U)ADC_BUF};
 
-	// Конфигурация сервиса работы Data-table и EPROM
+	// Конфигурация сервиса работы DataTable и EPROM
 	EPROMServiceConfig EPROMService = {(FUNC_EPROM_WriteValues)&NFLASH_WriteDTShifted, (FUNC_EPROM_ReadValues)&NFLASH_ReadDT};
 
 	// Инициализация data table
@@ -1045,18 +1048,69 @@ void Utm_Measure()
 	}
 	CONTROL_Values_Counter = ActualDataSize;
 
-	/*
-	 * Реализовать проверку
-	if(CurrentDut > CurrentMax)
-		DataTable[REG_WARNING] = WARNING_I_OUT_OF_RANGE;
+	// Определение экстремумов тока и расчёт напряжения для всех импульсов
+	for(int i = 1; i <= DataTable[REG_PULSE_COUNT]; i++)
+	{
+		Int32U Voltage = 0, Current = 0;
+		CONTROL_FindExtremum(i, UseCurrentScale, &Voltage, &Current);
 
-	if(DataTable[REG_DUT_U] > VOLTAGE_MEASURE_MAX)
-		DataTable[REG_WARNING] = WARNING_U_OUT_OF_RANGE;
-	*/
+		// Сохранение результата
+		Int16U CurrentLow = Current & 0xFFFF;
+		Int16U CurrentHigh = Current >> 16;
+
+		switch(i)
+		{
+			case 1:
+				DataTable[REG_DUT_U] = Voltage;
+				DataTable[REG_DUT_I_L] = CurrentLow;
+				DataTable[REG_DUT_I_H] = CurrentHigh;
+				break;
+
+			case 2:
+				DataTable[REG_DUT_U_PULSE2] = Voltage;
+				DataTable[REG_DUT_I_L_PULSE2] = CurrentLow;
+				DataTable[REG_DUT_I_H_PULSE2] = CurrentHigh;
+				break;
+
+			case 3:
+				DataTable[REG_DUT_U_PULSE3] = Voltage;
+				DataTable[REG_DUT_I_L_PULSE3] = CurrentLow;
+				DataTable[REG_DUT_I_H_PULSE3] = CurrentHigh;
+				break;
+		}
+	}
 }
 //------------------------------------------------------------------------------
 
+void CONTROL_FindExtremum(int PulseNumber, bool UseCurrentScale, pInt32U Voltage, pInt32U Current)
+{
+	pVIEntity rawVI = (pVIEntity)ADC_BUF;
+
+	// Определение границ импульса
+	Int16U StartIndex = (PulseNumber - 1) * (DataTable[REG_PULSE_DURATION] + DataTable[REG_PAUSE_DURATION]) / TIMER15_uS;
+	Int16U EndIndex = StartIndex + DataTable[REG_PULSE_DURATION] / TIMER15_uS;
+
+	// Поиск экстремума сортировкой
+	qsort((void *)(rawVI + StartIndex), EndIndex - StartIndex, sizeof(VIEntity), CONTROL_SortFunction);
+
+	// Усреднение значений на экстремуме
+	float AvgVoltage = 0, AvgCurrent = 0;
+	for(int i = 0; i < EXTREMUM_POINTS; i++)
+	{
+		AvgVoltage += rawVI[StartIndex + i].Voltage;
+		AvgCurrent += rawVI[StartIndex + i].Current;
+	}
+	*Voltage = AvgVoltage / EXTREMUM_POINTS;
+	*Current = AvgCurrent / EXTREMUM_POINTS;
+}
 //------------------------------------------------------------------------------
+
+int CONTROL_SortFunction(const void *A, const void *B)
+{
+	return (int)(((pVIEntity)B)->Current) - (int)(((pVIEntity)A)->Current);
+}
+//------------------------------------------------------------------------------
+
 void SetDeviceFault(Int16U Fault)
 {
 	DataTable[REG_FAULT_REASON] = Fault;
