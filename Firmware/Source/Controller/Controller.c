@@ -499,7 +499,6 @@ void SCTU_Config(pBCCIM_Interface Interface)
 	while(Nid_Count < DataTable[REG_TOTAL_SCPC])
 	{
 		SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_SC_PULSE_VALUE, 0);
-		SCPC_WriteData(Interface, SCPC_Data[Nid_Count].Nid, REG_SCPC_PULSE_DURATION, 1);
 		SCPC_Read_Data(Interface, SCPC_Data[Nid_Count].Nid, true);
 		if(SCPC_Data[Nid_Count].SC_PulseValue == 0)
 		{
@@ -842,6 +841,8 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 							DataTable[REG_WAVEFORM_TYPE]);
 					SCPC_WriteData(Interface, SCPC_Data[CellIndex].Nid, REG_SCPC_SC_PULSE_VALUE, SCPC_SC_SINE_MAX);
 					SCPC_WriteData(Interface, SCPC_Data[CellIndex].Nid, REG_SCPC_PULSE_COUNT, PulseCount);
+					SCPC_WriteData(Interface, SCPC_Data[CellIndex].Nid, REG_SCPC_PULSE_DURATION,
+							DataTable[REG_PULSE_DURATION]);
 					SCPC_Command(Interface, SCPC_Data[CellIndex].Nid, ACT_SCPC_SC_PULSE_CONFIG);
 
 					//Ждем паузу, пока блок выполняет процесс согласно заданной команде
