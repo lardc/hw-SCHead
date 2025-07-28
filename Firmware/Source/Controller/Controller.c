@@ -865,9 +865,12 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 					float SC_Temp = SC_K_Set * CurrentSet + SC_B_Set; //Калибровка погрешности задания тока
 					SC_Temp = (SC_Temp < 1) ? 1 : SC_Temp;
 
-					SCPC_WriteData(Interface, SCPC_Data[CalibratedNID].Nid, REG_SCPC_WAVEFORM_TYPE, DataTable[REG_WAVEFORM_TYPE]);
+					SCPC_WriteData(Interface, SCPC_Data[CalibratedNID].Nid, REG_SCPC_WAVEFORM_TYPE,
+							DataTable[REG_WAVEFORM_TYPE]);
 					SCPC_WriteData(Interface, SCPC_Data[CalibratedNID].Nid, REG_SCPC_SC_PULSE_VALUE, (uint16_t)SC_Temp);
 					SCPC_WriteData(Interface, SCPC_Data[CalibratedNID].Nid, REG_SCPC_PULSE_COUNT, PulseCount);
+					SCPC_WriteData(Interface, SCPC_Data[CalibratedNID].Nid, REG_SCPC_PULSE_DURATION,
+							DataTable[REG_PULSE_DURATION]);
 					SCPC_Command(Interface, SCPC_Data[CalibratedNID].Nid, ACT_SCPC_SC_PULSE_CONFIG);
 
 					//Ждем паузу, пока блок выполняет процесс согласно заданной команде
