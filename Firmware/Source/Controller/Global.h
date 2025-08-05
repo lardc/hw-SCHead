@@ -69,6 +69,7 @@
 #define ADC_I_SAMPLE_THRESHOLD                  5                               //Порог количества сэмплов с одинаоковой амплитудой для определения амплитуды тока
 #define AVERAGE_POINTS                          100                             //Количество точек усреднения
 #define SCPC_PREPULSE_PAUSE						9		// Фиксированная задержка в SCPC перед формированием импульса, мс
+#define SCPC_POSTPULSE_PAUSE					5		// Хвост на сигнале синхронизации для безопасной остановки, мс
 
 //Переменные
 extern volatile Int64U CONTROL_TimeCounter;

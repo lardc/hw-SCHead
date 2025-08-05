@@ -9,9 +9,10 @@
 #include "stdinc.h"
 #include "DataTable.h"
 
-#define PULSE_PAUSE_TIME_MIN 			10000  // в мкс
-#define PULSE_PAUSE_TIME_MAX 			20000  // в мкс
-#define PULSE_PAUSE_TIME_DEF 			10000  // в мкс
+// в мкс
+#define PULSE_PAUSE_TIME_MIN 			0		// в мкс
+#define PULSE_PAUSE_TIME_MAX 			20000	// в мкс
+#define PULSE_PAUSE_TIME_DEF 			10000	// в мкс
 
 #define PULSE_COUNT_MIN					1
 #define PULSE_COUNT_MAX					3

@@ -796,6 +796,8 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 				CalibratedNID = Pulse1CalibratedIndex;
 				break;
 		}
+		Int16U PrePulsePause = SCPC_PREPULSE_PAUSE
+				+ (PulseCount - 1) * (DataTable[REG_PULSE_DURATION] + DataTable[REG_PAUSE_DURATION]);
 
 		while(CurrentSet > 0)
 		{
@@ -840,7 +842,7 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 					SCPC_WriteData(Interface, SCPC_Data[CellIndex].Nid, REG_SCPC_WAVEFORM_TYPE,
 							DataTable[REG_WAVEFORM_TYPE]);
 					SCPC_WriteData(Interface, SCPC_Data[CellIndex].Nid, REG_SCPC_SC_PULSE_VALUE, SCPC_SC_SINE_MAX);
-					SCPC_WriteData(Interface, SCPC_Data[CellIndex].Nid, REG_SCPC_PULSE_COUNT, PulseCount);
+					SCPC_WriteData(Interface, SCPC_Data[CellIndex].Nid, REG_SCPC_PRE_PULSE_PAUSE, PrePulsePause);
 					SCPC_WriteData(Interface, SCPC_Data[CellIndex].Nid, REG_SCPC_PULSE_DURATION,
 							DataTable[REG_PULSE_DURATION]);
 					SCPC_Command(Interface, SCPC_Data[CellIndex].Nid, ACT_SCPC_SC_PULSE_CONFIG);
@@ -868,7 +870,7 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 					SCPC_WriteData(Interface, SCPC_Data[CalibratedNID].Nid, REG_SCPC_WAVEFORM_TYPE,
 							DataTable[REG_WAVEFORM_TYPE]);
 					SCPC_WriteData(Interface, SCPC_Data[CalibratedNID].Nid, REG_SCPC_SC_PULSE_VALUE, (uint16_t)SC_Temp);
-					SCPC_WriteData(Interface, SCPC_Data[CalibratedNID].Nid, REG_SCPC_PULSE_COUNT, PulseCount);
+					SCPC_WriteData(Interface, SCPC_Data[CalibratedNID].Nid, REG_SCPC_PRE_PULSE_PAUSE, PrePulsePause);
 					SCPC_WriteData(Interface, SCPC_Data[CalibratedNID].Nid, REG_SCPC_PULSE_DURATION,
 							DataTable[REG_PULSE_DURATION]);
 					SCPC_Command(Interface, SCPC_Data[CalibratedNID].Nid, ACT_SCPC_SC_PULSE_CONFIG);
@@ -898,9 +900,6 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 //------------------------------------------------------------------------------
 void SurgeCurrentProcess(pBCCIM_Interface Interface)
 {
-	uint16_t Nid_Count = 0;
-	Int16U PulseCount = 0;
-
 	if(DataTable[REG_DUT_TYPE] == THYRISTOR)
 	{
 		//Открытие тиристора
@@ -918,40 +917,27 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 	}
 	Delay_mS(200);
 
-	// Полный цикл формирования состоит из:
-	// 1. Фиксированная задержка SCPC_PREPULSE_PAUSE перед импульсом
-	// 2. Длительность импульса
-	// 3. Фиксированная минимальная 1мс между импульсами
-	// 4. Переменная задержка между импульсами
-
 	Int16U PulseDelay = DataTable[REG_PULSE_DURATION] / 1000;
-	Int16U PauseDelay = DataTable[REG_PAUSE_DURATION] / 1000 - SCPC_PREPULSE_PAUSE;
+	Int16U PauseDelay = DataTable[REG_PAUSE_DURATION] / 1000;
+	Int16U PulseCount = DataTable[REG_PULSE_COUNT];
+	Int16U SyncMeasureLength = PulseCount * PulseDelay + (PulseCount - 1) * PauseDelay + SCPC_POSTPULSE_PAUSE;
 
-	while(PulseCount < DataTable[REG_PULSE_COUNT])
-	{
-		//Запуск сигналов синхронизации для SCPC
-		SCPC_SYNC_SIGNAL_START;
-		OSC_SYNC_SIGNAL_START;
+	//Запуск сигналов синхронизации для SCPC
+	SCPC_SYNC_SIGNAL_START;
+	OSC_SYNC_SIGNAL_START;
 
-		Delay_mS(SCPC_PREPULSE_PAUSE);
+	Delay_mS(SCPC_PREPULSE_PAUSE);
+	// Запуск измерения с началом формирования
+	UI_Dut_MeasureStart();
+	Delay_mS(SyncMeasureLength);
 
-		// Оцифровка запускается перед первым импульсом
-		if(PulseCount == 0)
-			UI_Dut_MeasureStart();
-
-		Delay_mS(PulseDelay);
-
-		SCPC_SYNC_SIGNAL_STOP;
-		OSC_SYNC_SIGNAL_STOP;
-
-		Delay_mS(PauseDelay);
-		PulseCount++;
-	}
+	SCPC_SYNC_SIGNAL_STOP;
+	OSC_SYNC_SIGNAL_STOP;
 	DUT_CLOSE;
 	Delay_mS(200);
 
 	//Считываем статусы блоков SCPC
-	Nid_Count = 0;
+	uint16_t Nid_Count = 0;
 	while(Nid_Count < DataTable[REG_TOTAL_SCPC])
 	{
 		SCPC_Read_Data(Interface, SCPC_Data[Nid_Count].Nid, true);
