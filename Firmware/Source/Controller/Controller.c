@@ -934,6 +934,8 @@ void SurgeCurrentProcess(pBCCIM_Interface Interface)
 	SCPC_SYNC_SIGNAL_STOP;
 	OSC_SYNC_SIGNAL_STOP;
 	DUT_CLOSE;
+
+	IWDG_Control();
 	Delay_mS(200);
 
 	//Считываем статусы блоков SCPC
