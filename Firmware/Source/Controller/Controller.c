@@ -797,7 +797,7 @@ void SCTU_PulseSineConfig(pBCCIM_Interface Interface)
 				break;
 		}
 		Int16U PrePulsePause = SCPC_PREPULSE_PAUSE
-				+ (PulseCount - 1) * (DataTable[REG_PULSE_DURATION] + DataTable[REG_PAUSE_DURATION]);
+				+ (PulseCount - 1) * (DataTable[REG_PULSE_DURATION] + DataTable[REG_PAUSE_DURATION]) / 1000;
 
 		while(CurrentSet > 0)
 		{
